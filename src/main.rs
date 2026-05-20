@@ -53,7 +53,7 @@ fn main() {
                     .output()
                     .expect("failed to execute the program");
 
-                println!("{}", String::from_utf8_lossy(&output.stdout));
+                print!("{}", String::from_utf8_lossy(&output.stdout));
             } else {
                 println!("{command}: not found");
             }
