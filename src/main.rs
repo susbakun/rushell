@@ -7,7 +7,7 @@ use is_executable::IsExecutable;
 fn main() {
     let known_commands = ["type", "exit", "echo"];
     let paths = std::env::var("PATH").unwrap();
-    let paths = paths.split(" ").collect::<Vec<&str>>();
+    let paths = paths.split(":").collect::<Vec<&str>>();
 
     loop {
         print!("$ ");
