@@ -46,10 +46,9 @@ fn main() {
                 }
             }
         } else {
-            let (file_path, found) = find_exe(&paths, command);
+            let (_, found) = find_exe(&paths, command);
             if found {
-                let file_path = file_path.unwrap();
-                let output = Command::new(file_path)
+                let output = Command::new(command)
                     .args(remainder)
                     .output()
                     .expect("failed to execute the program");
