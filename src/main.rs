@@ -32,7 +32,7 @@ fn main() {
                 println!("{remainder} is a shell builtin");
             } else {
                 let mut found = false;
-                for path in &paths {
+                'outer: for path in &paths {
                     let dir = fs::read_dir(path).unwrap();
                     for file in dir {
                         let file = file.unwrap();
@@ -43,7 +43,7 @@ fn main() {
                         if file_path.is_executable() && file_name == remainder {
                             println!("{remainder} is {}", file_path.to_str().unwrap());
                             found = true;
-                            break;
+                            break 'outer;
                         }
                     }
                 }
