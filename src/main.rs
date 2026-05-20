@@ -12,6 +12,10 @@ fn main() {
 
         let command = buffer.trim();
 
+        if command == "exit" {
+            return;
+        }
+
         println!("{command}: command not found");
     }
 }
