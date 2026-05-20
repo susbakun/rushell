@@ -36,7 +36,7 @@ fn main() {
             if known_commands.contains(&&remainder[..]) {
                 println!("{remainder} is a shell builtin");
             } else {
-                let (file_path, found) = find_exe(&paths, command);
+                let (file_path, found) = find_exe(&paths, &remainder);
                 if found {
                     let file_path = file_path.unwrap();
 
