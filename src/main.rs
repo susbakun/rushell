@@ -40,9 +40,9 @@ fn main() {
                 if found {
                     let file_path = file_path.unwrap();
 
-                    println!("{command} is {}", file_path.to_str().unwrap());
+                    println!("{remainder} is {}", file_path.to_str().unwrap());
                 } else {
-                    println!("{command}: not found");
+                    println!("{remainder}: not found");
                 }
             }
         } else {
