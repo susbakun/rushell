@@ -2,6 +2,7 @@
 use std::io::{self, Write};
 
 fn main() {
+    let known_commands = ["type", "exit", "echo"];
     loop {
         print!("$ ");
         io::stdout().flush().unwrap();
@@ -20,6 +21,12 @@ fn main() {
             return;
         } else if command == "echo" {
             println!("{remainder}")
+        } else if command == "type" {
+            if known_commands.contains(&&remainder[..]) {
+                println!("{command}: is a shell builtin");
+            } else {
+                println!("{command}: not found");
+            }
         } else {
             println!("{command}: command not found");
         }
