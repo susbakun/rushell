@@ -1,8 +1,14 @@
 #[allow(unused_imports)]
 use std::io::{self, Write};
+use std::{fs, path::Path};
+
+use is_executable::IsExecutable;
 
 fn main() {
     let known_commands = ["type", "exit", "echo"];
+    let paths = std::env::var("PATH").unwrap();
+    let paths = paths.split(" ").collect::<Vec<&str>>();
+
     loop {
         print!("$ ");
         io::stdout().flush().unwrap();
@@ -25,7 +31,26 @@ fn main() {
             if known_commands.contains(&&remainder[..]) {
                 println!("{remainder} is a shell builtin");
             } else {
-                println!("{remainder}: not found");
+                let mut found = false;
+                for path in &paths {
+                    let dir = fs::read_dir(path).unwrap();
+                    for file in dir {
+                        let file = file.unwrap();
+                        let file_name = file.file_name().into_string().unwrap();
+                        let path = file.path();
+                        let file_path = Path::new(&path);
+
+                        if file_path.is_executable() && file_name == remainder {
+                            println!("{remainder} is {}", file_path.to_str().unwrap());
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+
+                if !found {
+                    println!("{remainder}: not found");
+                }
             }
         } else {
             println!("{command}: command not found");
