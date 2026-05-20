@@ -25,7 +25,7 @@ fn main() {
             if known_commands.contains(&&remainder[..]) {
                 println!("{remainder} is a shell builtin");
             } else {
-                println!("{command}: not found");
+                println!("{remainder}: not found");
             }
         } else {
             println!("{command}: command not found");
