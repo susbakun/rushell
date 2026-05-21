@@ -44,8 +44,10 @@ fn process_remainder(remainder: &str) -> String {
     for ch in remainder.chars() {
         if ch == '\'' {
             single_quote = !single_quote;
+            space_count = 0;
         } else if single_quote {
             formated.push(ch);
+            space_count = 0;
         } else if ch == ' ' {
             space_count += 1;
             if space_count < 2 {
