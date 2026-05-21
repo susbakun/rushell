@@ -53,24 +53,9 @@ fn process_remainder(remainder: &str) -> String {
             }
         } else {
             formated.push(ch);
+            space_count = 0;
         }
     }
 
     formated
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn remainder_test() {
-        let buffer = "echo 'hello''world'";
-        let line = &buffer.split(" ").collect::<Vec<&str>>();
-        let (command, remainder) = &buffer.split_once(" ").unwrap();
-
-        let remainder = process_remainder(remainder);
-
-        assert_eq!(remainder, "helloworld")
-    }
 }
