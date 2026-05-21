@@ -6,10 +6,17 @@ use std::{
     process::Command,
 };
 
+mod commands;
+use commands::*;
+mod utils;
+use utils::*;
+
+use anyhow::Result;
 use is_executable::IsExecutable;
 
-fn main() {
-    let known_commands = ["type", "exit", "echo"];
+const KNOWN_COMMANDS: &[&str] = &["type", "exit", "echo"];
+
+fn main() -> Result<()> {
     let paths = std::env::var("PATH").unwrap();
     let paths = paths.split(":").collect::<Vec<&str>>();
 
@@ -22,62 +29,48 @@ fn main() {
         std::io::stdin().read_line(&mut buffer).unwrap();
 
         let buffer = buffer.trim();
-        let line = &buffer.split(" ").collect::<Vec<&str>>();
-        let (command, remainder) = line.split_at(1);
-        let command = command[0];
+        let (command, remainder) = &buffer.split_once(" ").unwrap();
+        let remainder = process_remainder(remainder);
 
-        if command == "exit" {
-            return;
-        } else if command == "echo" {
-            let remainder = remainder.join(" ");
-            println!("{remainder}")
-        } else if command == "type" {
-            let remainder = remainder.join(" ");
-            if known_commands.contains(&&remainder[..]) {
-                println!("{remainder} is a shell builtin");
-            } else {
-                let (file_path, found) = find_exe(&paths, &remainder);
-                if found {
-                    let file_path = file_path.unwrap();
-
-                    println!("{remainder} is {}", file_path.to_str().unwrap());
-                } else {
-                    println!("{remainder}: not found");
-                }
-            }
-        } else {
-            let (_, found) = find_exe(&paths, command);
-            if found {
-                let output = Command::new(command)
-                    .args(remainder)
-                    .output()
-                    .expect("failed to execute the program");
-
-                print!("{}", String::from_utf8_lossy(&output.stdout));
-            } else {
-                println!("{command}: not found");
-            }
-        }
+        process_command(command, &remainder, &paths)?;
     }
 }
 
-fn find_exe(paths: &Vec<&str>, command: &str) -> (Option<PathBuf>, bool) {
-    let mut found = false;
-    for path in paths {
-        let dir = fs::read_dir(path).unwrap();
-        for file in dir {
-            let file = file.unwrap();
-            let file_name = file.file_name().into_string().unwrap();
-            let path = file.path();
-            let file_path = Path::new(&path);
+fn process_remainder(remainder: &str) -> String {
+    let mut formated = String::new();
+    let mut single_quote = false;
+    let mut space_count = 0;
 
-            if file_path.is_executable() && file_name == command {
-                found = true;
-                let file_path = file_path.to_owned();
-                return (Some(file_path), found);
+    for ch in remainder.chars() {
+        if ch == '\'' {
+            single_quote = !single_quote;
+        } else if single_quote {
+            formated.push(ch);
+        } else if ch == ' ' {
+            space_count += 1;
+            if space_count < 2 {
+                formated.push(ch);
             }
+        } else {
+            formated.push(ch);
         }
     }
 
-    (None, found)
+    formated
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn remainder_test() {
+        let buffer = "echo 'hello''world'";
+        let line = &buffer.split(" ").collect::<Vec<&str>>();
+        let (command, remainder) = &buffer.split_once(" ").unwrap();
+
+        let remainder = process_remainder(remainder);
+
+        assert_eq!(remainder, "helloworld")
+    }
 }
