@@ -87,12 +87,12 @@ pub fn process_remainder(remainder: &str) -> String {
                     is_double_quote = !is_double_quote;
                 }
             }
-        } else if is_double_quote || is_single_quote {
-            formated.push(ch);
         } else if ch == '\\' {
             if is_double_quote {
                 backslash_seen = true;
             }
+        } else if is_double_quote || is_single_quote {
+            formated.push(ch);
         } else if ch == ' ' {
             space_count += 1;
             if space_count < 2 {
