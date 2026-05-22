@@ -1,35 +1,33 @@
-[![progress-banner](https://backend.codecrafters.io/progress/shell/9173ee24-dc8e-4297-809b-6acbaf6e092e)](https://app.codecrafters.io/users/codecrafters-bot?r=2qF)
+# Shell (Rust)
 
-This is a starting point for Rust solutions to the
-["Build Your Own Shell" Challenge](https://app.codecrafters.io/courses/shell/overview).
+A minimal POSIX-style shell built in Rust as part of the [Build Your Own Shell](https://app.codecrafters.io/courses/shell/stages/ni6) challenge on Codecrafters.
 
-In this challenge, you'll build your own POSIX compliant shell that's capable of
-interpreting shell commands, running external programs and builtin commands like
-cd, pwd, echo and more. Along the way, you'll learn about shell command parsing,
-REPLs, builtin commands, and more.
+## Features
 
-**Note**: If you're viewing this repo on GitHub, head over to
-[codecrafters.io](https://codecrafters.io) to try the challenge.
+- Interactive REPL with `$` prompt
+- Builtins: `echo`, `exit`, `type`
+- Resolve executables via `PATH`
+- Run external programs and print stdout
+- Single-quoted arguments (paths with spaces)
 
-# Passing the first stage
-
-The entry point for your `shell` implementation is in `src/main.rs`. Study and
-uncomment the relevant code, then run the command below to execute the tests on
-our servers:
+## Build
 
 ```sh
-codecrafters submit
+cargo build --release
 ```
 
-Time to move on to the next stage!
+## Run
 
-# Stage 2 & beyond
+```sh
+./your_program.sh
+```
 
-Note: This section is for stages 2 and beyond.
+Or:
 
-1. Ensure you have `cargo (1.95)` installed locally
-1. Run `./your_program.sh` to run your program, which is implemented in
-   `src/main.rs`. This command compiles your Rust project, so it might be slow
-   the first time you run it. Subsequent runs will be fast.
-1. Run `codecrafters submit` to submit your solution to CodeCrafters. Test
-   output will be streamed to your terminal.
+```sh
+cargo run
+```
+
+## Challenge
+
+https://app.codecrafters.io/courses/shell/stages/ni6
