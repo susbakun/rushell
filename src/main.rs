@@ -31,7 +31,7 @@ fn main() -> Result<()> {
         std::io::stdin().read_line(&mut buffer).unwrap();
 
         let buffer = buffer.trim();
-        let (command, remainder) = &buffer.split_once(" ").unwrap();
+        let (command, remainder) = &buffer.split_once(" ").unwrap_or((buffer, ""));
 
         process_command(command, remainder, &paths)?;
     }
