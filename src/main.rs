@@ -66,6 +66,8 @@ fn parse_buffer(buffer: &str) -> (String, String) {
         }
     }
 
+    println!("{command}");
+
     let remainder = buffer.get(sep + 2..).unwrap().to_string();
 
     (command, remainder)
