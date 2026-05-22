@@ -34,7 +34,7 @@ pub fn parse_args(remainder: &str) -> Vec<String> {
                 }
             }
             '\\' => {
-                if is_single_quote || is_single_quote {
+                if is_single_quote {
                     current.push(ch);
                 } else {
                     backslash_seen = true;
@@ -90,7 +90,9 @@ pub fn process_remainder(remainder: &str) -> String {
         } else if is_double_quote || is_single_quote {
             formated.push(ch);
         } else if ch == '\\' {
-            backslash_seen = true;
+            if is_double_quote {
+                backslash_seen = true;
+            }
         } else if ch == ' ' {
             space_count += 1;
             if space_count < 2 {
