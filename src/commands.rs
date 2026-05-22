@@ -44,11 +44,10 @@ fn handle_type_command(remainder: &str, paths: &Vec<&str>) -> Result<()> {
 }
 
 fn handle_executable_command(remainder: &str, command: &str, paths: &Vec<&str>) -> Result<()> {
-    let (file_path, found) = find_exe(paths, command)?;
+    let (_, found) = find_exe(paths, command)?;
     if found {
-        let file_path = file_path.unwrap();
         let args = parse_args(remainder);
-        let output = Command::new(&file_path)
+        let output = Command::new(command)
             .args(&args)
             .output()
             .expect("failed to execute the program");
