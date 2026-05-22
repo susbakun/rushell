@@ -38,9 +38,9 @@ fn main() -> Result<()> {
             continue;
         }
         let command = &tokens[0];
-        let args = &tokens.get(1..).unwrap_or_default();
+        let args = tokens.get(1..).unwrap_or_default();
         let remainder = &args.join(" ");
 
-        process_command(command, remainder, &tokens[1..], &paths)?;
+        process_command(command, remainder, args, &paths)?;
     }
 }
