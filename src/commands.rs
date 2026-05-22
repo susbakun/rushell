@@ -1,6 +1,11 @@
 use super::*;
 
-pub fn process_command(command: &str, remainder: &str, paths: &Vec<&str>) -> Result<()> {
+pub fn process_command(
+    command: &str,
+    remainder: &str,
+    args: &[String],
+    paths: &Vec<&str>,
+) -> Result<()> {
     if command == "exit" {
         handle_exit_command();
     } else if command == "echo" {
@@ -8,7 +13,7 @@ pub fn process_command(command: &str, remainder: &str, paths: &Vec<&str>) -> Res
     } else if command == "type" {
         handle_type_command(remainder, &paths)?;
     } else {
-        handle_executable_command(remainder, command, &paths)?;
+        handle_executable_command(args, command, &paths)?;
     }
 
     Ok(())
@@ -19,14 +24,10 @@ fn handle_exit_command() {
 }
 
 fn handle_echo_command(remainder: &str) {
-    let remainder = process_remainder(remainder);
-
     println!("{remainder}")
 }
 
 fn handle_type_command(remainder: &str, paths: &Vec<&str>) -> Result<()> {
-    let remainder = process_remainder(remainder);
-
     if KNOWN_COMMANDS.contains(&&remainder[..]) {
         println!("{remainder} is a shell builtin");
     } else {
@@ -43,12 +44,11 @@ fn handle_type_command(remainder: &str, paths: &Vec<&str>) -> Result<()> {
     Ok(())
 }
 
-fn handle_executable_command(remainder: &str, command: &str, paths: &Vec<&str>) -> Result<()> {
-    let (_, found) = find_exe(paths, &command)?;
+fn handle_executable_command(args: &[String], command: &str, paths: &Vec<&str>) -> Result<()> {
+    let (_, found) = find_exe(paths, command)?;
     if found {
-        let args = parse_args(remainder);
         let output = Command::new(command)
-            .args(&args)
+            .args(args)
             .output()
             .expect("failed to execute the program");
 

@@ -10,8 +10,6 @@ mod commands;
 use commands::*;
 mod utils;
 use utils::*;
-mod remainder;
-use remainder::*;
 
 use anyhow::Result;
 use is_executable::IsExecutable;
@@ -31,52 +29,18 @@ fn main() -> Result<()> {
         std::io::stdin().read_line(&mut buffer).unwrap();
 
         let buffer = buffer.trim();
-
-        if buffer.starts_with("'") || buffer.starts_with("'") {
-            let (command, remainder) = parse_buffer(&buffer);
-            process_command(&command, &remainder, &paths)?;
-        } else {
-            let (command, remainder) = &buffer.split_once(" ").unwrap_or((buffer, ""));
-            process_command(command, remainder, &paths)?;
+        if buffer.is_empty() {
+            continue;
         }
-    }
-}
 
-fn parse_buffer(buffer: &str) -> (String, String) {
-    let mut command = String::new();
-    let mut sep = 0;
-
-    let (mut single_quote, mut double_quote) = (false, false);
-
-    if buffer.starts_with("'") {
-        command.push('\'');
-        single_quote = true;
-    } else if buffer.starts_with("\"") {
-        command.push('"');
-        double_quote = true;
-    }
-
-    for (ind, ch) in buffer.char_indices().skip(1) {
-        if ch == '\'' {
-            if single_quote {
-                command.push(ch);
-                sep = ind;
-                break;
-            }
-        } else if ch == '\"' {
-            if double_quote {
-                command.push(ch);
-                sep = ind;
-                break;
-            }
-        } else {
-            command.push(ch);
+        let tokens = parse_input(buffer);
+        if tokens.is_empty() {
+            continue;
         }
+        let command = &tokens[0];
+        let args = &tokens.get(1..).unwrap_or_default();
+        let remainder = &args.join(" ");
+
+        process_command(command, remainder, &tokens[1..], &paths)?;
     }
-
-    println!("{command}");
-
-    let remainder = buffer.get(sep + 2..).unwrap().to_string();
-
-    (command, remainder)
 }
