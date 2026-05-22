@@ -49,18 +49,26 @@ fn parse_buffer(buffer: &str) -> (String, String) {
     let (mut single_quote, mut double_quote) = (false, false);
 
     if buffer.starts_with("'") {
+        command.push('"');
         single_quote = true;
     } else if buffer.starts_with("\"") {
+        command.push('\'');
         double_quote = true;
     }
 
     for (ind, ch) in buffer.char_indices().skip(1) {
-        if ch == '\'' && single_quote {
-            sep = ind;
-            break;
-        } else if ch == '\"' && double_quote {
-            sep = ind;
-            break;
+        if ch == '\'' {
+            if single_quote {
+                command.push(ch);
+                sep = ind;
+                break;
+            }
+        } else if ch == '\"' {
+            if double_quote {
+                command.push(ch);
+                sep = ind;
+                break;
+            }
         } else {
             command.push(ch);
         }
