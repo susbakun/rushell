@@ -30,7 +30,6 @@ pub fn process_remainder(remainder: &str) -> String {
 
     for ch in remainder.chars() {
         if ch == '\'' || ch == '"' {
-            println!("Hello maybe");
             is_quote = !is_quote;
         } else if is_quote {
             formated.push(ch);
