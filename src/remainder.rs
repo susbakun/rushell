@@ -1,12 +1,28 @@
 pub fn parse_args(remainder: &str) -> Vec<String> {
     let mut args = Vec::new();
     let mut current = String::new();
-    let mut in_single_quote = false;
+    let (mut is_single_quote, mut is_double_quote) = (false, false);
 
     for ch in remainder.chars() {
         match ch {
-            '\'' | '"' => in_single_quote = !in_single_quote,
-            ' ' if !in_single_quote => {
+            '\'' | '"' => {
+                if is_double_quote {
+                    if ch == '"' {
+                        is_double_quote = !is_double_quote;
+                    }
+                } else if is_single_quote {
+                    if ch == '\'' {
+                        is_single_quote = !is_single_quote;
+                    }
+                } else {
+                    if ch == '\'' {
+                        is_single_quote = !is_single_quote;
+                    } else {
+                        is_double_quote = !is_double_quote;
+                    }
+                }
+            }
+            ' ' if !is_single_quote && !is_double_quote => {
                 if !current.is_empty() {
                     args.push(current);
                     current = String::new();
