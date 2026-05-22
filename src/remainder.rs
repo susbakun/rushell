@@ -5,7 +5,7 @@ pub fn parse_args(remainder: &str) -> Vec<String> {
 
     for ch in remainder.chars() {
         match ch {
-            '\'' => in_single_quote = !in_single_quote,
+            '\'' | '"' => in_single_quote = !in_single_quote,
             ' ' if !in_single_quote => {
                 if !current.is_empty() {
                     args.push(current);
@@ -25,16 +25,15 @@ pub fn parse_args(remainder: &str) -> Vec<String> {
 
 pub fn process_remainder(remainder: &str) -> String {
     let mut formated = String::new();
-    let mut single_quote = false;
+    let mut is_quote = false;
     let mut space_count = 0;
 
     for ch in remainder.chars() {
-        if ch == '\'' {
-            single_quote = !single_quote;
-            space_count = 0;
-        } else if single_quote {
+        if ch == '\'' || ch == '"' {
+            println!("Hello maybe");
+            is_quote = !is_quote;
+        } else if is_quote {
             formated.push(ch);
-            space_count = 0;
         } else if ch == ' ' {
             space_count += 1;
             if space_count < 2 {
@@ -42,6 +41,9 @@ pub fn process_remainder(remainder: &str) -> String {
             }
         } else {
             formated.push(ch);
+        }
+
+        if ch != ' ' {
             space_count = 0;
         }
     }
