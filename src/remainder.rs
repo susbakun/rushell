@@ -67,7 +67,10 @@ pub fn process_remainder(remainder: &str) -> String {
         if backslash_seen {
             formated.push(ch);
             backslash_seen = false;
-        } else if ch == '\'' || ch == '"' {
+            continue;
+        }
+
+        if ch == '\'' || ch == '"' {
             if is_double_quote {
                 if ch == '"' {
                     is_double_quote = !is_double_quote;
@@ -88,7 +91,9 @@ pub fn process_remainder(remainder: &str) -> String {
                 }
             }
         } else if ch == '\\' {
-            if is_double_quote {
+            if is_single_quote {
+                formated.push(ch);
+            } else {
                 backslash_seen = true;
             }
         } else if is_double_quote || is_single_quote {
