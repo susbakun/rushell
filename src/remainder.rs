@@ -9,10 +9,14 @@ pub fn parse_args(remainder: &str) -> Vec<String> {
                 if is_double_quote {
                     if ch == '"' {
                         is_double_quote = !is_double_quote;
+                    } else {
+                        current.push(ch);
                     }
                 } else if is_single_quote {
                     if ch == '\'' {
                         is_single_quote = !is_single_quote;
+                    } else {
+                        current.push(ch);
                     }
                 } else {
                     if ch == '\'' {
