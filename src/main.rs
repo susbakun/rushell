@@ -49,10 +49,10 @@ fn parse_buffer(buffer: &str) -> (String, String) {
     let (mut single_quote, mut double_quote) = (false, false);
 
     if buffer.starts_with("'") {
-        command.push('"');
+        command.push('\'');
         single_quote = true;
     } else if buffer.starts_with("\"") {
-        command.push('\'');
+        command.push('"');
         double_quote = true;
     }
 
