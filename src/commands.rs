@@ -14,32 +14,6 @@ pub fn process_command(command: &str, remainder: &str, paths: &Vec<&str>) -> Res
     Ok(())
 }
 
-fn process_remainder(remainder: &str) -> String {
-    let mut formated = String::new();
-    let mut single_quote = false;
-    let mut space_count = 0;
-
-    for ch in remainder.chars() {
-        if ch == '\'' {
-            single_quote = !single_quote;
-            space_count = 0;
-        } else if single_quote {
-            formated.push(ch);
-            space_count = 0;
-        } else if ch == ' ' {
-            space_count += 1;
-            if space_count < 2 {
-                formated.push(ch);
-            }
-        } else {
-            formated.push(ch);
-            space_count = 0;
-        }
-    }
-
-    formated
-}
-
 fn handle_exit_command() {
     std::process::exit(0);
 }
@@ -70,11 +44,12 @@ fn handle_type_command(remainder: &str, paths: &Vec<&str>) -> Result<()> {
 }
 
 fn handle_executable_command(remainder: &str, command: &str, paths: &Vec<&str>) -> Result<()> {
-    let (_, found) = find_exe(paths, command)?;
-    let args = remainder.split(" ").collect::<Vec<&str>>();
+    let (file_path, found) = find_exe(paths, command)?;
     if found {
-        let output = Command::new(command)
-            .args(args)
+        let file_path = file_path.unwrap();
+        let args = parse_args(remainder);
+        let output = Command::new(&file_path)
+            .args(&args)
             .output()
             .expect("failed to execute the program");
 

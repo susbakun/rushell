@@ -10,6 +10,8 @@ mod commands;
 use commands::*;
 mod utils;
 use utils::*;
+mod remainder;
+use remainder::*;
 
 use anyhow::Result;
 use is_executable::IsExecutable;
