@@ -31,8 +31,42 @@ fn main() -> Result<()> {
         std::io::stdin().read_line(&mut buffer).unwrap();
 
         let buffer = buffer.trim();
-        let (command, remainder) = &buffer.split_once(" ").unwrap_or((buffer, ""));
 
-        process_command(command, remainder, &paths)?;
+        if buffer.starts_with("'") || buffer.starts_with("'") {
+            let (command, remainder) = parse_buffer(&buffer);
+            process_command(&command, &remainder, &paths)?;
+        } else {
+            let (command, remainder) = &buffer.split_once(" ").unwrap_or((buffer, ""));
+            process_command(command, remainder, &paths)?;
+        }
     }
+}
+
+fn parse_buffer(buffer: &str) -> (String, String) {
+    let mut command = String::new();
+    let mut sep = 0;
+
+    let (mut single_quote, mut double_quote) = (false, false);
+
+    if buffer.starts_with("'") {
+        single_quote = true;
+    } else if buffer.starts_with("\"") {
+        double_quote = true;
+    }
+
+    for (ind, ch) in buffer.char_indices().skip(1) {
+        if ch == '\'' && single_quote {
+            sep = ind;
+            break;
+        } else if ch == '\"' && double_quote {
+            sep = ind;
+            break;
+        } else {
+            command.push(ch);
+        }
+    }
+
+    let remainder = buffer.get(sep + 2..).unwrap().to_string();
+
+    (command, remainder)
 }

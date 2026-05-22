@@ -44,7 +44,6 @@ fn handle_type_command(remainder: &str, paths: &Vec<&str>) -> Result<()> {
 }
 
 fn handle_executable_command(remainder: &str, command: &str, paths: &Vec<&str>) -> Result<()> {
-    let command = format_command(command);
     let (_, found) = find_exe(paths, &command)?;
     if found {
         let args = parse_args(remainder);
@@ -59,37 +58,4 @@ fn handle_executable_command(remainder: &str, command: &str, paths: &Vec<&str>) 
     }
 
     Ok(())
-}
-
-fn format_command(command: &str) -> String {
-    let mut foramtted_command = String::new();
-    let (mut is_single_quote, mut is_double_quote) = (false, false);
-
-    for ch in command.chars() {
-        if ch == '\'' || ch == '"' {
-            if is_double_quote {
-                if ch == '"' {
-                    is_double_quote = !is_double_quote;
-                } else {
-                    foramtted_command.push(ch);
-                }
-            } else if is_single_quote {
-                if ch == '\'' {
-                    is_single_quote = !is_single_quote;
-                } else {
-                    foramtted_command.push(ch);
-                }
-            } else {
-                if ch == '\'' {
-                    is_single_quote = !is_single_quote;
-                } else {
-                    is_double_quote = !is_double_quote;
-                }
-            }
-        } else {
-            foramtted_command.push(ch);
-        }
-    }
-
-    foramtted_command
 }
