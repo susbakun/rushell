@@ -12,7 +12,6 @@ pub fn parse_args(remainder: &str) -> Vec<String> {
         }
 
         match ch {
-            '\\' if !backslash_seen => backslash_seen = !backslash_seen,
             '\'' | '"' => {
                 if is_double_quote {
                     if ch == '"' {
@@ -32,6 +31,13 @@ pub fn parse_args(remainder: &str) -> Vec<String> {
                     } else {
                         is_double_quote = !is_double_quote;
                     }
+                }
+            }
+            '\\' => {
+                if is_single_quote || is_single_quote {
+                    current.push(ch);
+                } else {
+                    backslash_seen = true;
                 }
             }
             ' ' if !is_single_quote && !is_double_quote => {
@@ -58,9 +64,7 @@ pub fn process_remainder(remainder: &str) -> String {
     let mut space_count = 0;
 
     for ch in remainder.chars() {
-        if ch == '\\' && !backslash_seen {
-            backslash_seen = true;
-        } else if backslash_seen {
+        if backslash_seen {
             formated.push(ch);
             backslash_seen = false;
         } else if ch == '\'' || ch == '"' {
@@ -85,6 +89,8 @@ pub fn process_remainder(remainder: &str) -> String {
             }
         } else if is_double_quote || is_single_quote {
             formated.push(ch);
+        } else if ch == '\\' {
+            backslash_seen = true;
         } else if ch == ' ' {
             space_count += 1;
             if space_count < 2 {
