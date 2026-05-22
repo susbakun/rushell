@@ -2,9 +2,17 @@ pub fn parse_args(remainder: &str) -> Vec<String> {
     let mut args = Vec::new();
     let mut current = String::new();
     let (mut is_single_quote, mut is_double_quote) = (false, false);
+    let mut backslash_seen = false;
 
     for ch in remainder.chars() {
+        if backslash_seen {
+            current.push(ch);
+            backslash_seen = false;
+            continue;
+        }
+
         match ch {
+            '\\' if !backslash_seen => backslash_seen = !backslash_seen,
             '\'' | '"' => {
                 if is_double_quote {
                     if ch == '"' {
@@ -46,10 +54,16 @@ pub fn parse_args(remainder: &str) -> Vec<String> {
 pub fn process_remainder(remainder: &str) -> String {
     let mut formated = String::new();
     let (mut is_single_quote, mut is_double_quote) = (false, false);
+    let mut backslash_seen = false;
     let mut space_count = 0;
 
     for ch in remainder.chars() {
-        if ch == '\'' || ch == '"' {
+        if ch == '\\' && !backslash_seen {
+            backslash_seen = true;
+        } else if backslash_seen {
+            formated.push(ch);
+            backslash_seen = false;
+        } else if ch == '\'' || ch == '"' {
             if is_double_quote {
                 if ch == '"' {
                     is_double_quote = !is_double_quote;
