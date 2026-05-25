@@ -106,6 +106,9 @@ pub fn process_output(output: &String, args: &[String], new_line: bool) -> Resul
             println!("{output}");
         } else {
             print!("{output}");
+            if !output.ends_with('\n') {
+                println!();
+            }
             io::stdout().flush()?;
         }
         Ok(0)
