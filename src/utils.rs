@@ -105,7 +105,7 @@ pub fn process_output(output: &String, args: &[String], new_line: bool) -> Resul
         if new_line {
             println!("{output}");
         } else {
-            print!("{new_line}");
+            print!("{output}");
         }
         Ok(0)
     }
