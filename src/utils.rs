@@ -98,7 +98,7 @@ pub fn find_exe(paths: &Vec<&str>, command: &str) -> Result<(Option<PathBuf>, bo
 
 pub fn process_output(output: &String, args: &[String], is_stderror: bool) -> Result<usize> {
     if has_redirect_operator(args) {
-        let file = find_file(args)?;
+        let file = find_file(args, is_stderror)?;
 
         if should_redirect(args, is_stderror) {
             write_to_file(output, file)?;
