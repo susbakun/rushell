@@ -46,7 +46,5 @@ fn main() -> Result<()> {
         let remainder = process_remainder(remainder);
 
         process_command(command, remainder, args, &paths)?;
-
-        println!("")
     }
 }
