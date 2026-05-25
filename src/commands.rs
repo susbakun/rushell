@@ -52,8 +52,10 @@ fn handle_executable_command(args: &[String], command: &str, paths: &Vec<&str>) 
     let (_, found) = find_exe(paths, command)?;
     if found {
         let exec_args = args_without_redirect(args);
+        let exec_args = &exec_args.get(1..).unwrap_or_default();
+
         let command_output = Command::new(command)
-            .args(&exec_args)
+            .args(*exec_args)
             .output()
             .expect("failed to execute the command");
 
