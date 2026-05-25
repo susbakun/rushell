@@ -105,9 +105,11 @@ pub fn process_output(output: &String, args: &[String], is_stderror: bool) -> Re
             return Ok(0);
         }
     }
-    print!("{output}");
-    if !output.ends_with('\n') {
-        println!();
+    if !output.is_empty() {
+        print!("{output}");
+        if !output.ends_with('\n') {
+            println!();
+        }
     }
     io::stdout().flush()?;
     Ok(0)
@@ -128,9 +130,9 @@ pub fn has_err_redirect(args: &[String]) -> bool {
 }
 
 pub fn should_redirect(args: &[String], is_stderror: bool) -> bool {
-    if !is_stderror && has_err_redirect(args) {
-        return false;
+    if is_stderror {
+        return has_err_redirect(args); // Only redirect stderr if 2> is present
+    } else {
+        return has_std_redirect(args); // Only redirect stdout if > is present
     }
-
-    true
 }
