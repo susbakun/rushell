@@ -96,31 +96,39 @@ pub fn find_exe(paths: &Vec<&str>, command: &str) -> Result<(Option<PathBuf>, bo
     Ok((None, found))
 }
 
-pub fn process_output(
-    output: &String,
-    args: &[String],
-    new_line: bool,
-    is_stderror: bool,
-) -> Result<usize> {
-    if should_redirect(args, is_stderror) {
-        write_to_file(output, args)
-    } else {
-        if new_line {
-            println!("{output}");
-        } else {
-            print!("{output}");
-            if !output.ends_with('\n') {
-                println!();
-            }
-            io::stdout().flush()?;
+pub fn process_output(output: &String, args: &[String], is_stderror: bool) -> Result<usize> {
+    if has_redirect_operator(args) {
+        let file = find_file(args)?;
+
+        if should_redirect(args, is_stderror) {
+            write_to_file(output, file);
+            return Ok(0);
         }
-        Ok(0)
     }
+    print!("{output}");
+    if !output.ends_with('\n') {
+        println!();
+    }
+    io::stdout().flush()?;
+    Ok(0)
+}
+
+pub fn has_redirect_operator(args: &[String]) -> bool {
+    args.iter().any(|arg| {
+        STDOUT_REDIRECT_OPS.contains(&arg.as_str()) || STDERROR_REDIRECT_OPS.contains(&arg.as_str())
+    })
+}
+
+pub fn has_std_redirect(args: &[String]) -> bool {
+    args.iter()
+        .any(|arg| STDOUT_REDIRECT_OPS.contains(&arg.as_str()))
+}
+
+pub fn has_err_redirect(args: &[String]) -> bool {
+    args.iter()
+        .any(|arg| STDERROR_REDIRECT_OPS.contains(&arg.as_str()))
 }
 
 pub fn should_redirect(args: &[String], is_stderror: bool) -> bool {
-    args.iter().any(|arg| {
-        (STDOUT_REDIRECT_OPS.contains(&arg.as_str()) && !is_stderror)
-            || (STDERROR_REDIRECT_OPS.contains(&arg.as_str()) && is_stderror)
-    })
+    has_err_redirect(args) && !is_stderror
 }

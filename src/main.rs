@@ -44,7 +44,6 @@ fn main() -> Result<()> {
         let command = &tokens[0];
         let args = tokens.get(1..).unwrap_or_default();
 
-        let remainder = &args.join(" ");
         let remainder = args_without_redirect(args).join(" ");
 
         process_command(command, &remainder, args, &paths)?;

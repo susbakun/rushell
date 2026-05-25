@@ -1,9 +1,7 @@
 use super::*;
 use std::fs::{File, OpenOptions};
 
-pub fn write_to_file(output: &String, args: &[String]) -> Result<usize> {
-    let mut file = find_file(args)?;
-
+pub fn write_to_file(output: &String, mut file: File) -> Result<usize> {
     Ok(file.write(output.as_bytes())?)
 }
 
