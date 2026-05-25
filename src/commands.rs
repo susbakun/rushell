@@ -50,10 +50,17 @@ fn handle_type_command(remainder: &str, paths: &Vec<&str>, args: &[String]) -> R
 fn handle_executable_command(args: &[String], command: &str, paths: &Vec<&str>) -> Result<usize> {
     let (_, found) = find_exe(paths, command)?;
     if found {
+        let exec_args = args_without_redirect(args);
         let command_output = Command::new(command)
-            .args(args)
+            .args(&exec_args)
             .output()
-            .expect("failed to execute the program");
+            .expect("failed to execute the command");
+
+        let stderr = String::from_utf8_lossy(&command_output.stderr);
+        if !stderr.is_empty() {
+            eprint!("{stderr}");
+            io::stderr().flush()?;
+        }
 
         let output = format!("{}", String::from_utf8_lossy(&command_output.stdout));
         process_output(&output, args, false)?;

@@ -59,14 +59,17 @@ pub fn parse_input(input: &str) -> Vec<String> {
     args
 }
 
-pub fn process_remainder(remainder: &str) -> &str {
-    for op in ["1>"] {
-        if let Some(idx) = remainder.find(op) {
-            return remainder[..idx].trim_end();
+pub fn args_without_redirect(args: &[String]) -> Vec<String> {
+    let mut new_args = Vec::new();
+    let mut i = 0;
+    while i < args.len() {
+        if REDIRECT_OPS.contains(&args[i].as_str()) {
+            break;
         }
+        new_args.push(args[i].clone());
+        i += 1;
     }
-
-    remainder
+    new_args
 }
 
 pub fn find_exe(paths: &Vec<&str>, command: &str) -> Result<(Option<PathBuf>, bool)> {
@@ -92,10 +95,7 @@ pub fn find_exe(paths: &Vec<&str>, command: &str) -> Result<(Option<PathBuf>, bo
 }
 
 pub fn should_redirect(args: &[String]) -> bool {
-    let redirect_operator = String::from(">");
-    let redirect_operator2 = String::from("1>");
-
-    args.contains(&redirect_operator) || args.contains(&redirect_operator2)
+    args.iter().any(|arg| REDIRECT_OPS.contains(&arg.as_str()))
 }
 
 pub fn process_output(output: &String, args: &[String], new_line: bool) -> Result<usize> {
