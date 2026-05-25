@@ -10,8 +10,10 @@ mod commands;
 use commands::*;
 mod utils;
 use utils::*;
+mod file;
+use file::*;
 
-use anyhow::Result;
+use anyhow::{Result, anyhow};
 use is_executable::IsExecutable;
 
 const KNOWN_COMMANDS: &[&str] = &["type", "exit", "echo"];
@@ -39,7 +41,9 @@ fn main() -> Result<()> {
         }
         let command = &tokens[0];
         let args = tokens.get(1..).unwrap_or_default();
+
         let remainder = &args.join(" ");
+        let remainder = process_remainder(remainder);
 
         process_command(command, remainder, args, &paths)?;
     }

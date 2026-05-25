@@ -1,12 +1,12 @@
 use super::*;
 
-pub fn parse_input(remainder: &str) -> Vec<String> {
+pub fn parse_input(input: &str) -> Vec<String> {
     let mut args = Vec::new();
     let mut current = String::new();
     let (mut is_single_quote, mut is_double_quote) = (false, false);
     let mut backslash_seen = false;
 
-    for ch in remainder.chars() {
+    for ch in input.chars() {
         if backslash_seen {
             current.push(ch);
             backslash_seen = false;
@@ -59,6 +59,18 @@ pub fn parse_input(remainder: &str) -> Vec<String> {
     args
 }
 
+pub fn process_remainder(remainder: &str) -> &str {
+    if remainder.contains(">") {
+        remainder
+            .split(">")
+            .map(|item| item.trim())
+            .next()
+            .unwrap_or_default()
+    } else {
+        remainder
+    }
+}
+
 pub fn find_exe(paths: &Vec<&str>, command: &str) -> Result<(Option<PathBuf>, bool)> {
     let mut found = false;
     for path in paths {
@@ -79,4 +91,18 @@ pub fn find_exe(paths: &Vec<&str>, command: &str) -> Result<(Option<PathBuf>, bo
     }
 
     Ok((None, found))
+}
+
+pub fn should_redirect(args: &[String]) -> bool {
+    let redirect_operator = String::from(">");
+    args.contains(&redirect_operator)
+}
+
+pub fn process_output(output: &String, args: &[String]) -> Result<usize> {
+    if should_redirect(args) {
+        write_to_file(output, args)
+    } else {
+        println!("{output}");
+        Ok(0)
+    }
 }
