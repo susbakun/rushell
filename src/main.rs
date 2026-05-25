@@ -14,6 +14,8 @@ mod file;
 use file::*;
 mod constants;
 use constants::*;
+mod output;
+use output::*;
 
 use anyhow::{Result, anyhow};
 use is_executable::IsExecutable;
