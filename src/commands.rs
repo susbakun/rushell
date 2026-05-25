@@ -24,7 +24,7 @@ fn handle_exit_command() {
 }
 
 fn handle_echo_command(remainder: &str, args: &[String]) -> Result<usize> {
-    let output = remainder.to_string();
+    let output = format!("{remainder}\n");
     process_output(&output, args, false)
 }
 
