@@ -1,0 +1,2 @@
+salam
+salami >> test.txt
