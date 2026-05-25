@@ -50,9 +50,11 @@ fn handle_type_command(remainder: &str, paths: &Vec<&str>, args: &[String]) -> R
 
 fn handle_executable_command(args: &[String], command: &str, paths: &Vec<&str>) -> Result<usize> {
     let (_, found) = find_exe(paths, command)?;
+    let exec_args = args_without_redirect(args);
+
     if found {
         let command_output = Command::new(command)
-            .args(args)
+            .args(exec_args)
             .output()
             .expect("failed to execute the command");
 
