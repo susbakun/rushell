@@ -1,3 +1,5 @@
+use anyhow::Ok;
+
 use super::*;
 
 pub fn parse_input(input: &str) -> Vec<String> {
@@ -97,13 +99,11 @@ pub fn find_exe(paths: &Vec<&str>, command: &str) -> Result<(Option<PathBuf>, bo
 }
 
 pub fn process_output(output: &String, args: &[String], is_stderror: bool) -> Result<usize> {
-    if has_redirect_operator(args) {
+    if should_redirect(args, is_stderror) {
         let file = find_file(args)?;
 
-        if should_redirect(args, is_stderror) {
-            write_to_file(output, file)?;
-            return Ok(0);
-        }
+        write_to_file(output, file)?;
+        return Ok(0);
     }
     if !output.is_empty() {
         print!("{output}");
@@ -115,8 +115,12 @@ pub fn process_output(output: &String, args: &[String], is_stderror: bool) -> Re
     Ok(0)
 }
 
-pub fn has_redirect_operator(args: &[String]) -> bool {
-    has_std_redirect(args) || has_err_redirect(args)
+pub fn should_redirect(args: &[String], is_stderror: bool) -> bool {
+    if is_stderror {
+        return has_err_redirect(args); // Only redirect stderr if 2> is present
+    } else {
+        return has_std_redirect(args); // Only redirect stdout if > is present
+    }
 }
 
 pub fn has_std_redirect(args: &[String]) -> bool {
@@ -127,12 +131,4 @@ pub fn has_std_redirect(args: &[String]) -> bool {
 pub fn has_err_redirect(args: &[String]) -> bool {
     args.iter()
         .any(|arg| STDERROR_REDIRECT_OPS.contains(&arg.as_str()))
-}
-
-pub fn should_redirect(args: &[String], is_stderror: bool) -> bool {
-    if is_stderror {
-        return has_err_redirect(args); // Only redirect stderr if 2> is present
-    } else {
-        return has_std_redirect(args); // Only redirect stdout if > is present
-    }
 }
