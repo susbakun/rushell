@@ -51,26 +51,19 @@ fn handle_type_command(remainder: &str, paths: &Vec<&str>, args: &[String]) -> R
 fn handle_executable_command(args: &[String], command: &str, paths: &Vec<&str>) -> Result<usize> {
     let (_, found) = find_exe(paths, command)?;
     if found {
-        // Remove redirect operators from args passed to the actual command
-        let exec_args = args_without_redirect(args);
-        
-        // Build full args including command for redirect processing
-        let mut full_args = vec![command.to_string()];
-        full_args.extend_from_slice(args);
-
         let command_output = Command::new(command)
-            .args(&exec_args)
+            .args(args)
             .output()
             .expect("failed to execute the command");
 
         let stderr = String::from_utf8_lossy(&command_output.stderr).to_string();
         if !stderr.is_empty() {
-            process_output(&stderr, &full_args, true)?;
+            process_output(&stderr, args, true)?;
         }
 
         let stdout = String::from_utf8_lossy(&command_output.stdout);
         if !stdout.is_empty() {
-            process_output(&stdout.to_string(), &full_args, false)?;
+            process_output(&stdout.to_string(), args, false)?;
         }
     } else {
         let output = format!("{command}: not found");

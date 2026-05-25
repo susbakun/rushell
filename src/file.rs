@@ -2,9 +2,7 @@ use super::*;
 use std::fs::{File, OpenOptions};
 
 pub fn write_to_file(output: &String, mut file: File) -> Result<usize> {
-    let bytes_written = file.write(output.as_bytes())?;
-    file.flush()?;
-    Ok(bytes_written)
+    Ok(file.write(output.as_bytes())?)
 }
 
 pub fn find_file(args: &[String]) -> Result<File> {
@@ -15,11 +13,6 @@ pub fn find_file(args: &[String]) -> Result<File> {
         .map(|item| item.trim())
         .nth(1)
         .ok_or_else(|| anyhow!("no file name provided"))?;
-
-    // Create parent directories if they don't exist
-    if let Some(parent) = Path::new(file_name).parent() {
-        fs::create_dir_all(parent)?;
-    }
 
     Ok(OpenOptions::new()
         .create(true)
