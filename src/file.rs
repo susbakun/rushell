@@ -6,17 +6,21 @@ pub fn write_to_file(output: &String, mut file: File) -> Result<usize> {
 }
 
 pub fn find_file(args: &[String]) -> Result<File> {
-    let joined_args = args.join(" ");
+    for i in 0..args.len() {
+        if STDOUT_REDIRECT_OPS.contains(&args[i].as_str())
+            || STDERROR_REDIRECT_OPS.contains(&args[i].as_str())
+        {
+            let file_name = args
+                .get(i + 1)
+                .ok_or_else(|| anyhow!("no file name provided"))?;
 
-    let file_name = joined_args
-        .split(">")
-        .map(|item| item.trim())
-        .nth(1)
-        .ok_or_else(|| anyhow!("no file name provided"))?;
+            return Ok(OpenOptions::new()
+                .create(true)
+                .write(true)
+                .truncate(true)
+                .open(file_name)?);
+        }
+    }
 
-    Ok(OpenOptions::new()
-        .create(true)
-        .write(true)
-        .truncate(true)
-        .open(file_name)?)
+    Err(anyhow!("no redirect operator found"))
 }
