@@ -101,7 +101,7 @@ pub fn process_output(output: &String, args: &[String], is_stderror: bool) -> Re
         let file = find_file(args)?;
 
         if should_redirect(args, is_stderror) {
-            write_to_file(output, file);
+            write_to_file(output, file)?;
             return Ok(0);
         }
     }
@@ -114,9 +114,7 @@ pub fn process_output(output: &String, args: &[String], is_stderror: bool) -> Re
 }
 
 pub fn has_redirect_operator(args: &[String]) -> bool {
-    args.iter().any(|arg| {
-        STDOUT_REDIRECT_OPS.contains(&arg.as_str()) || STDERROR_REDIRECT_OPS.contains(&arg.as_str())
-    })
+    has_std_redirect(args) || has_err_redirect(args)
 }
 
 pub fn has_std_redirect(args: &[String]) -> bool {
@@ -130,5 +128,9 @@ pub fn has_err_redirect(args: &[String]) -> bool {
 }
 
 pub fn should_redirect(args: &[String], is_stderror: bool) -> bool {
-    has_err_redirect(args) && !is_stderror
+    if is_stderror {
+        has_err_redirect(args)
+    } else {
+        has_std_redirect(args)
+    }
 }
