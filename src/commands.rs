@@ -64,8 +64,10 @@ fn handle_executable_command(args: &[String], command: &str, paths: &Vec<&str>) 
             process_output(&stderr.to_string(), args, true)?;
         }
 
-        let output = format!("{}", String::from_utf8_lossy(&command_output.stdout));
-        process_output(&output, args, false)?;
+        let stdout = String::from_utf8_lossy(&command_output.stdout);
+        if !stdout.is_empty() {
+            process_output(&stdout.to_string(), args, false)?;
+        }
     } else {
         let output = format!("{command}: not found");
         process_output(&output, args, true)?;
