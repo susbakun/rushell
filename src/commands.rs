@@ -60,6 +60,7 @@ fn handle_executable_command(args: &[String], command: &str, paths: &Vec<&str>) 
         let stderr = String::from_utf8_lossy(&command_output.stderr);
         if !stderr.is_empty() {
             process_output(&stderr.to_string(), args, false)?;
+            return Ok(0);
         }
 
         let output = format!("{}", String::from_utf8_lossy(&command_output.stdout));
