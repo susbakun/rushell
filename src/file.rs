@@ -17,7 +17,7 @@ pub fn find_file(args: &[String]) -> Result<File> {
             return Ok(OpenOptions::new()
                 .create(true)
                 .write(true)
-                .truncate(true)
+                .append(true)
                 .open(file_name)?);
         }
     }
