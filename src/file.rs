@@ -2,7 +2,9 @@ use super::*;
 use std::fs::{File, OpenOptions};
 
 pub fn write_to_file(output: &String, mut file: File) -> Result<usize> {
-    Ok(file.write(output.as_bytes())?)
+    let bytes_written = file.write(output.as_bytes())?;
+    file.flush()?;
+    Ok(bytes_written)
 }
 
 pub fn find_file(args: &[String]) -> Result<File> {
