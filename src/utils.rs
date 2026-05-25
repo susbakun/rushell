@@ -128,7 +128,7 @@ pub fn has_err_redirect(args: &[String]) -> bool {
 }
 
 pub fn should_redirect(args: &[String], is_stderror: bool) -> bool {
-    if !is_stderror && has_std_redirect(args) {
+    if !is_stderror && has_err_redirect(args) {
         return false;
     }
 
