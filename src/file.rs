@@ -14,6 +14,11 @@ pub fn find_file(args: &[String]) -> Result<File> {
         .nth(1)
         .ok_or_else(|| anyhow!("no file name provided"))?;
 
+    // Create parent directories if they don't exist
+    if let Some(parent) = Path::new(file_name).parent() {
+        fs::create_dir_all(parent)?;
+    }
+
     Ok(OpenOptions::new()
         .create(true)
         .write(true)
