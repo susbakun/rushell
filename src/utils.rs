@@ -60,15 +60,13 @@ pub fn parse_input(input: &str) -> Vec<String> {
 }
 
 pub fn process_remainder(remainder: &str) -> &str {
-    if remainder.contains(">") {
-        remainder
-            .split(">")
-            .map(|item| item.trim())
-            .next()
-            .unwrap_or_default()
-    } else {
-        remainder
+    for op in ["1>"] {
+        if let Some(idx) = remainder.find(op) {
+            return remainder[..idx].trim_end();
+        }
     }
+
+    remainder
 }
 
 pub fn find_exe(paths: &Vec<&str>, command: &str) -> Result<(Option<PathBuf>, bool)> {
@@ -108,6 +106,7 @@ pub fn process_output(output: &String, args: &[String], new_line: bool) -> Resul
             println!("{output}");
         } else {
             print!("{output}");
+            io::stdout().flush()?;
         }
         Ok(0)
     }
