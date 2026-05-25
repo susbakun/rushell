@@ -63,7 +63,9 @@ pub fn args_without_redirect(args: &[String]) -> Vec<String> {
     let mut new_args = Vec::new();
     let mut i = 0;
     while i < args.len() {
-        if REDIRECT_OPS.contains(&args[i].as_str()) {
+        if STDOUT_REDIRECT_OPS.contains(&args[i].as_str())
+            || STDERROR_REDIRECT_OPS.contains(&args[i].as_str())
+        {
             break;
         }
         new_args.push(args[i].clone());
@@ -94,12 +96,13 @@ pub fn find_exe(paths: &Vec<&str>, command: &str) -> Result<(Option<PathBuf>, bo
     Ok((None, found))
 }
 
-pub fn should_redirect(args: &[String]) -> bool {
-    args.iter().any(|arg| REDIRECT_OPS.contains(&arg.as_str()))
-}
-
-pub fn process_output(output: &String, args: &[String], new_line: bool) -> Result<usize> {
-    if should_redirect(args) {
+pub fn process_output(
+    output: &String,
+    args: &[String],
+    new_line: bool,
+    is_stderror: bool,
+) -> Result<usize> {
+    if should_redirect(args, is_stderror) {
         write_to_file(output, args)
     } else {
         if new_line {
@@ -113,4 +116,11 @@ pub fn process_output(output: &String, args: &[String], new_line: bool) -> Resul
         }
         Ok(0)
     }
+}
+
+pub fn should_redirect(args: &[String], is_stderror: bool) -> bool {
+    args.iter().any(|arg| {
+        (STDOUT_REDIRECT_OPS.contains(&arg.as_str()) && !is_stderror)
+            || (STDERROR_REDIRECT_OPS.contains(&arg.as_str()) && is_stderror)
+    })
 }

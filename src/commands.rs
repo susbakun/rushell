@@ -25,23 +25,23 @@ fn handle_exit_command() {
 
 fn handle_echo_command(remainder: &str, args: &[String]) -> Result<usize> {
     let output = remainder.to_string();
-    process_output(&output, args, true)
+    process_output(&output, args, true, false)
 }
 
 fn handle_type_command(remainder: &str, paths: &Vec<&str>, args: &[String]) -> Result<usize> {
     if KNOWN_COMMANDS.contains(&&remainder[..]) {
         let output = format!("{remainder} is a shell builtin");
-        process_output(&output, args, true)?;
+        process_output(&output, args, true, false)?;
     } else {
         let (file_path, found) = find_exe(paths, &remainder)?;
         if found {
             let file_path = file_path.unwrap();
 
             let output = format!("{remainder} is {}", file_path.to_str().unwrap());
-            process_output(&output, args, true)?;
+            process_output(&output, args, true, false)?;
         } else {
             let output = format!("{remainder}: not found");
-            process_output(&output, args, true)?;
+            process_output(&output, args, true, true)?;
         }
     }
 
@@ -59,15 +59,14 @@ fn handle_executable_command(args: &[String], command: &str, paths: &Vec<&str>) 
 
         let stderr = String::from_utf8_lossy(&command_output.stderr);
         if !stderr.is_empty() {
-            process_output(&stderr.to_string(), args, true)?;
-            return Ok(0);
+            return process_output(&stderr.to_string(), args, true, true);
         }
 
         let output = format!("{}", String::from_utf8_lossy(&command_output.stdout));
-        process_output(&output, args, false)?;
+        process_output(&output, args, false, false)?;
     } else {
         let output = format!("{command}: not found");
-        process_output(&output, args, true)?;
+        process_output(&output, args, true, true)?;
     }
 
     Ok(0)
