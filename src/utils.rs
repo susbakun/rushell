@@ -99,19 +99,20 @@ pub fn find_exe(paths: &Vec<&str>, command: &str) -> Result<(Option<PathBuf>, bo
 }
 
 pub fn process_output(output: &String, args: &[String], is_stderror: bool) -> Result<usize> {
-    if has_err_redirect(args) || has_std_redirect(args) {
+    if should_redirect(args, is_stderror) {
         let file = find_file(args)?;
-        if should_redirect(args, is_stderror) {
-            write_to_file(output, file)?;
-            return Ok(0);
-        }
+        write_to_file(output, file)?;
+        return Ok(0);
     }
+
     if !output.is_empty() {
         print!("{output}");
+
         if !output.ends_with('\n') {
             println!();
         }
     }
+
     io::stdout().flush()?;
     Ok(0)
 }
