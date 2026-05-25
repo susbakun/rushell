@@ -102,7 +102,7 @@ pub fn process_output(output: &String, args: &[String]) -> Result<usize> {
     if should_redirect(args) {
         write_to_file(output, args)
     } else {
-        println!("{output}");
+        print!("{output}");
         Ok(0)
     }
 }
