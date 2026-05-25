@@ -40,7 +40,8 @@ fn handle_type_command(remainder: &str, paths: &Vec<&str>, args: &[String]) -> R
             let output = format!("{remainder} is {}", file_path.to_str().unwrap());
             process_output(&output, args, true)?;
         } else {
-            println!("{remainder}: not found");
+            let output = format!("{remainder}: not found");
+            process_output(&output, args, true)?;
         }
     }
 
@@ -58,14 +59,14 @@ fn handle_executable_command(args: &[String], command: &str, paths: &Vec<&str>) 
 
         let stderr = String::from_utf8_lossy(&command_output.stderr);
         if !stderr.is_empty() {
-            eprint!("{stderr}");
-            io::stderr().flush()?;
+            process_output(&stderr.to_string(), args, false)?;
         }
 
         let output = format!("{}", String::from_utf8_lossy(&command_output.stdout));
         process_output(&output, args, false)?;
     } else {
-        println!("{command}: not found");
+        let output = format!("{command}: not found");
+        process_output(&output, args, true)?;
     }
 
     Ok(0)
