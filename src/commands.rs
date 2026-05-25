@@ -25,20 +25,20 @@ fn handle_exit_command() {
 
 fn handle_echo_command(remainder: &str, args: &[String]) -> Result<usize> {
     let output = remainder.to_string();
-    process_output(&output, args)
+    process_output(&output, args, true)
 }
 
 fn handle_type_command(remainder: &str, paths: &Vec<&str>, args: &[String]) -> Result<usize> {
     if KNOWN_COMMANDS.contains(&&remainder[..]) {
         let output = format!("{remainder} is a shell builtin");
-        process_output(&output, args)?;
+        process_output(&output, args, true)?;
     } else {
         let (file_path, found) = find_exe(paths, &remainder)?;
         if found {
             let file_path = file_path.unwrap();
 
             let output = format!("{remainder} is {}", file_path.to_str().unwrap());
-            process_output(&output, args)?;
+            process_output(&output, args, true)?;
         } else {
             println!("{remainder}: not found");
         }
@@ -56,7 +56,7 @@ fn handle_executable_command(args: &[String], command: &str, paths: &Vec<&str>) 
             .expect("failed to execute the program");
 
         let output = format!("{}", String::from_utf8_lossy(&command_output.stdout));
-        process_output(&output, args)?;
+        process_output(&output, args, false)?;
     } else {
         println!("{command}: not found");
     }

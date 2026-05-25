@@ -98,11 +98,15 @@ pub fn should_redirect(args: &[String]) -> bool {
     args.contains(&redirect_operator)
 }
 
-pub fn process_output(output: &String, args: &[String]) -> Result<usize> {
+pub fn process_output(output: &String, args: &[String], new_line: bool) -> Result<usize> {
     if should_redirect(args) {
         write_to_file(output, args)
     } else {
-        println!("{output}");
+        if new_line {
+            println!("{output}");
+        } else {
+            print!("{new_line}");
+        }
         Ok(0)
     }
 }
