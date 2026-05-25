@@ -1,12 +1,14 @@
+use anyhow::Ok;
+
 use super::*;
 
-pub fn parse_input(remainder: &str) -> Vec<String> {
+pub fn parse_input(input: &str) -> Vec<String> {
     let mut args = Vec::new();
     let mut current = String::new();
     let (mut is_single_quote, mut is_double_quote) = (false, false);
     let mut backslash_seen = false;
 
-    for ch in remainder.chars() {
+    for ch in input.chars() {
         if backslash_seen {
             current.push(ch);
             backslash_seen = false;
@@ -59,6 +61,21 @@ pub fn parse_input(remainder: &str) -> Vec<String> {
     args
 }
 
+pub fn args_without_redirect(args: &[String]) -> Vec<String> {
+    let mut new_args = Vec::new();
+    let mut i = 0;
+    while i < args.len() {
+        if STDOUT_REDIRECT_OPS.contains(&args[i].as_str())
+            || STDERROR_REDIRECT_OPS.contains(&args[i].as_str())
+        {
+            break;
+        }
+        new_args.push(args[i].clone());
+        i += 1;
+    }
+    new_args
+}
+
 pub fn find_exe(paths: &Vec<&str>, command: &str) -> Result<(Option<PathBuf>, bool)> {
     let mut found = false;
     for path in paths {
@@ -79,4 +96,40 @@ pub fn find_exe(paths: &Vec<&str>, command: &str) -> Result<(Option<PathBuf>, bo
     }
 
     Ok((None, found))
+}
+
+pub fn process_output(output: &String, args: &[String], is_stderror: bool) -> Result<usize> {
+    if has_err_redirect(args) || has_std_redirect(args) {
+        let file = find_file(args)?;
+        if should_redirect(args, is_stderror) {
+            write_to_file(output, file)?;
+            return Ok(0);
+        }
+    }
+    if !output.is_empty() {
+        print!("{output}");
+        if !output.ends_with('\n') {
+            println!();
+        }
+    }
+    io::stdout().flush()?;
+    Ok(0)
+}
+
+pub fn should_redirect(args: &[String], is_stderror: bool) -> bool {
+    if is_stderror {
+        return has_err_redirect(args); // Only redirect stderr if 2> is present
+    } else {
+        return has_std_redirect(args); // Only redirect stdout if > is present
+    }
+}
+
+pub fn has_std_redirect(args: &[String]) -> bool {
+    args.iter()
+        .any(|arg| STDOUT_REDIRECT_OPS.contains(&arg.as_str()))
+}
+
+pub fn has_err_redirect(args: &[String]) -> bool {
+    args.iter()
+        .any(|arg| STDERROR_REDIRECT_OPS.contains(&arg.as_str()))
 }
