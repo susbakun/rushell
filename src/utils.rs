@@ -95,7 +95,7 @@ pub fn find_exe(paths: &Vec<&str>, command: &str) -> Result<(Option<PathBuf>, bo
 
 pub fn should_redirect(args: &[String]) -> bool {
     let redirect_operator = String::from(">");
-    let redirect_operator2 = String::from(">");
+    let redirect_operator2 = String::from("1>");
 
     args.contains(&redirect_operator) || args.contains(&redirect_operator2)
 }
