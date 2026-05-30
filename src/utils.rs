@@ -1,5 +1,3 @@
-use anyhow::Ok;
-
 use super::*;
 
 pub fn parse_input(input: &str) -> Vec<String> {
@@ -81,18 +79,23 @@ pub fn args_without_redirect(args: &[String]) -> Vec<String> {
 pub fn find_exe(paths: &Vec<&str>, command: &str) -> Result<(Option<PathBuf>, bool)> {
     let mut found = false;
     for path in paths {
-        let dir = fs::read_dir(path)?;
-        for file in dir {
-            let file = file?;
-            let file_name = file.file_name();
+        if path.is_empty() {
+            continue;
+        }
 
-            let path = file.path();
-            let file_path = Path::new(&path);
+        if let Ok(dir) = fs::read_dir(path) {
+            for file in dir {
+                let file = file?;
+                let file_name = file.file_name();
 
-            if file_path.is_executable() && file_name == command {
-                found = true;
-                let file_path = file_path.to_owned();
-                return Ok((Some(file_path), found));
+                let path = file.path();
+                let file_path = Path::new(&path);
+
+                if file_path.is_executable() && file_name == command {
+                    found = true;
+                    let file_path = file_path.to_owned();
+                    return Ok((Some(file_path), found));
+                }
             }
         }
     }
@@ -104,17 +107,21 @@ pub fn find_command_names_on_path(paths: &Vec<&str>) -> Result<Vec<String>> {
     let mut commands: Vec<String> = Vec::new();
 
     for path in paths {
-        let dir = fs::read_dir(path)?;
+        if path.is_empty() {
+            continue;
+        }
 
-        for file in dir {
-            let file = file?;
-            let entry = file.file_name();
-            let name = entry.to_string_lossy().into();
-            let file_path = file.path();
+        if let Ok(dir) = fs::read_dir(path) {
+            for file in dir {
+                let file = file?;
+                let entry = file.file_name();
+                let name = entry.to_string_lossy().into();
+                let file_path = file.path();
 
-            let file_path = Path::new(&file_path);
-            if file_path.is_executable() {
-                commands.push(name);
+                let file_path = Path::new(&file_path);
+                if file_path.is_executable() {
+                    commands.push(name);
+                }
             }
         }
     }

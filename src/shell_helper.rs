@@ -33,11 +33,18 @@ impl Completer for ShellHepler {
             }
         }
 
-        let st = line.get(start..pos).unwrap_or_default();
-
-        let candidates = KNOWN_COMMANDS
+        let mut str_commands = self
+            .exe_commands
             .iter()
-            .filter(|item| item.starts_with(st))
+            .map(|command| command.as_str())
+            .collect::<Vec<&str>>();
+        str_commands.extend(KNOWN_COMMANDS);
+
+        let patt = line.get(start..pos).unwrap_or_default();
+
+        let candidates = str_commands
+            .iter()
+            .filter(|item| item.starts_with(patt))
             .map(|item| format!("{item} "))
             .collect::<Vec<String>>();
         // println!("{candidates:?}");
