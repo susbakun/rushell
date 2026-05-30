@@ -67,6 +67,8 @@ pub fn args_without_redirect(args: &[String]) -> Vec<String> {
     while i < args.len() {
         if STDOUT_REDIRECT_OPS.contains(&args[i].as_str())
             || STDERROR_REDIRECT_OPS.contains(&args[i].as_str())
+            || STDOUT_APPEND_OPS.contains(&args[i].as_str())
+            || STDERROR_APPEND_OPS.contains(&args[i].as_str())
         {
             break;
         }
