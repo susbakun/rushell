@@ -1,3 +1,5 @@
+use std::cell::RefCell;
+
 use super::*;
 
 use rustyline::Helper;
@@ -8,11 +10,17 @@ use rustyline::validate::Validator;
 
 pub struct ShellHepler {
     exe_commands: Vec<String>,
+    last_prefix: RefCell<Option<String>>,
+    tab_count: RefCell<usize>,
 }
 
 impl ShellHepler {
     pub fn new(exe_commands: Vec<String>) -> Self {
-        Self { exe_commands }
+        Self {
+            exe_commands,
+            last_prefix: RefCell::new(None),
+            tab_count: RefCell::new(0),
+        }
     }
 }
 
@@ -29,7 +37,7 @@ impl Completer for ShellHepler {
 
         for (ind, ch) in line.char_indices().rev() {
             if ch == ' ' {
-                start = ind
+                start = ind + 1
             }
         }
 
@@ -42,13 +50,44 @@ impl Completer for ShellHepler {
 
         let patt = line.get(start..pos).unwrap_or_default();
 
-        let candidates = str_commands
+        let mut candidates = str_commands
             .iter()
             .filter(|item| item.starts_with(patt))
             .map(|item| format!("{item} "))
             .collect::<Vec<String>>();
-        // println!("{candidates:?}");
-        Ok((0, candidates))
+
+        candidates.sort();
+        // removing duplicates
+        candidates.dedup();
+
+        if candidates.len() > 1 {
+            let prefix = patt.to_string();
+            let same_prefix = self.last_prefix.borrow().as_ref() == Some(&prefix);
+
+            if same_prefix {
+                *self.tab_count.borrow_mut() += 1;
+            } else {
+                *self.tab_count.borrow_mut() = 1;
+                *self.last_prefix.borrow_mut() = Some(prefix);
+            }
+
+            // first tab
+            if *self.tab_count.borrow() == 1 {
+                print!("\x07");
+                std::io::stdout().flush()?;
+                return Ok((0, vec![]));
+            }
+
+            // second tab
+            let joined_candidates = candidates.join("  ");
+            println!();
+            println!("{joined_candidates}");
+            print!("$ {line}");
+            std::io::stdout().flush()?;
+            Ok((0, vec![]))
+        } else {
+            Ok((0, candidates))
+        }
     }
 }
 
