@@ -59,13 +59,13 @@ fn handle_executable_command(args: &[String], command: &str, paths: &Vec<&str>) 
             .expect("failed to execute the command");
 
         let stderr = String::from_utf8_lossy(&command_output.stderr).to_string();
-        if !stderr.is_empty() || should_redirect(args, true) {
+        if !stderr.is_empty() {
             process_output(&stderr, args, true)?;
         }
 
-        let stdout = String::from_utf8_lossy(&command_output.stdout).to_string();
-        if !stdout.is_empty() || should_redirect(args, false) {
-            process_output(&stdout, args, false)?;
+        let stdout = String::from_utf8_lossy(&command_output.stdout);
+        if !stdout.is_empty() {
+            process_output(&stdout.to_string(), args, false)?;
         }
     } else {
         let output = format!("{command}: not found");
