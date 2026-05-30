@@ -32,6 +32,13 @@ A minimal POSIX-style shell built in Rust, built as part of the [Codecrafters "B
 * Separate stdout/stderr handling
 * Executable lookup using `PATH`
 * Handles commands with spaces in arguments
+* Interactive line editing via [rustyline](https://github.com/kkawakam/rustyline)
+* Tab completion for command names
+
+  * Builtins: `echo`, `exit`, `type`
+  * Executables discovered on `PATH` at startup
+  * First **Tab**: beep if multiple matches; extend to the longest common prefix when possible
+  * Second **Tab**: list all matching commands (bash-style)
 
 ## Examples
 
@@ -78,6 +85,15 @@ first line
 second line
 ```
 
+### Tab completion
+
+```sh
+$ ec<Tab>          # completes toward "echo " (or beeps if ambiguous)
+$ ec<Tab><Tab>     # lists: echo  (and any other "ec*" commands on PATH)
+
+$ l<Tab><Tab>      # lists executables on PATH starting with "l" (e.g. ls)
+```
+
 ## Build
 
 ```sh
@@ -102,11 +118,13 @@ cargo run
 
 ```text
 src/
-├── main.rs
-├── commands.rs
-├── utils.rs
-├── file.rs
-└── constants.rs
+├── main.rs          # REPL loop (rustyline)
+├── shell_helper.rs  # tab completion
+├── commands.rs      # builtin / external dispatch
+├── output.rs        # stdout/stderr and redirection
+├── utils.rs         # parsing, PATH lookup
+├── file.rs          # redirect targets
+└── constants.rs     # builtins, redirect operators
 ```
 
 ## Challenge
@@ -123,6 +141,7 @@ This project is intentionally minimal and focuses on learning how shells work in
 * redirection
 * PATH resolution
 * shell builtin behavior
+* readline-style editing and tab completion
 
 Some advanced shell features (pipes, job control, subshells, globbing, etc.) may still be work in progress depending on the current challenge stage. ([docs.codecrafters.io][1])
 
