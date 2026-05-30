@@ -1,7 +1,5 @@
-use std::cell::RefCell;
-use std::ops::Index;
-
 use super::*;
+use std::cell::RefCell;
 
 use rustyline::Helper;
 use rustyline::completion::Completer;
