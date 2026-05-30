@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::ops::Index;
 
 use super::*;
 
@@ -60,6 +61,11 @@ impl Completer for ShellHepler {
         // removing duplicates
         candidates.dedup();
 
+        let longest_prefix = find_longest_prefix(patt, &candidates);
+        if patt != longest_prefix {
+            return Ok((0, vec![longest_prefix]));
+        }
+
         if candidates.len() > 1 {
             let prefix = patt.to_string();
             let same_prefix = self.last_prefix.borrow().as_ref() == Some(&prefix);
@@ -89,6 +95,26 @@ impl Completer for ShellHepler {
             Ok((0, candidates))
         }
     }
+}
+
+fn find_longest_prefix(prefix: &str, commands: &Vec<String>) -> String {
+    let mut new_prefix = prefix.to_string();
+    if commands.len() > 0 {
+        let skip = prefix.len();
+        let first_command = &commands[0];
+        let first_command_chars = first_command.chars().skip(skip);
+        for ch in first_command_chars {
+            new_prefix.push(ch);
+            if commands
+                .iter()
+                .any(|command| !command.starts_with(&new_prefix))
+            {
+                new_prefix.pop();
+                break;
+            }
+        }
+    }
+    new_prefix
 }
 
 impl Hinter for ShellHepler {
