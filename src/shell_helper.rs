@@ -6,7 +6,15 @@ use rustyline::highlight::Highlighter;
 use rustyline::hint::Hinter;
 use rustyline::validate::Validator;
 
-pub struct ShellHepler;
+pub struct ShellHepler {
+    exe_commands: Vec<String>,
+}
+
+impl ShellHepler {
+    pub fn new(exe_commands: Vec<String>) -> Self {
+        Self { exe_commands }
+    }
+}
 
 impl Completer for ShellHepler {
     type Candidate = String;

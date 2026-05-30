@@ -99,3 +99,25 @@ pub fn find_exe(paths: &Vec<&str>, command: &str) -> Result<(Option<PathBuf>, bo
 
     Ok((None, found))
 }
+
+pub fn find_command_names_on_path(paths: &Vec<&str>) -> Result<Vec<String>> {
+    let mut commands: Vec<String> = Vec::new();
+
+    for path in paths {
+        let dir = fs::read_dir(path)?;
+
+        for file in dir {
+            let file = file?;
+            let entry = file.file_name();
+            let name = entry.to_string_lossy().into();
+            let file_path = file.path();
+
+            let file_path = Path::new(&file_path);
+            if file_path.is_executable() {
+                commands.push(name);
+            }
+        }
+    }
+
+    Ok(commands)
+}

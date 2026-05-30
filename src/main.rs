@@ -23,13 +23,13 @@ use anyhow::{Result, anyhow};
 use is_executable::IsExecutable;
 use rustyline::{Editor, error::ReadlineError::Interrupted, history::DefaultHistory};
 
-const KNOWN_COMMANDS: &[&str] = &["type", "exit", "echo"];
-
 fn main() -> Result<()> {
-    let paths = std::env::var("PATH").unwrap();
+    let paths = std::env::var("PATH").unwrap_or_default();
     let paths = paths.split(":").collect::<Vec<&str>>();
 
-    let helper = ShellHepler {};
+    let exe_commands = find_command_names_on_path(&paths)?;
+
+    let helper = ShellHepler::new(exe_commands);
 
     let mut rl = Editor::<ShellHepler, DefaultHistory>::new()?;
     rl.set_helper(Some(helper));
