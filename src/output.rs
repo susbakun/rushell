@@ -1,11 +1,7 @@
 use super::*;
 
 pub fn process_output(output: &String, args: &[String], is_stderror: bool) -> Result<usize> {
-    if has_err_redirect(args)
-        || has_std_redirect(args)
-        || has_std_append(args)
-        || has_err_append(args)
-    {
+    if should_redirect(args, is_stderror) {
         let file = find_file(args, false)?;
         if should_redirect(args, is_stderror) {
             write_to_file(output, file)?;
