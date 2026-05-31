@@ -111,13 +111,19 @@ fn longest_common_prefix(prefix: &str, candidates: &[String]) -> String {
 fn find_directory(prefix: &str) -> PathBuf {
     let parts = prefix.split("/");
     let mut dir = PathBuf::new();
+    let mut len = 0;
 
     for part in parts {
         dir.push(part);
+        len += 1;
     }
 
     if !prefix.ends_with("/") {
         dir.pop();
+    }
+
+    if len == 1 {
+        dir.push(".");
     }
 
     dir
