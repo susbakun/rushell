@@ -50,7 +50,7 @@ fn handle_type_command(remainder: &str, paths: &Vec<&str>, args: &[String]) -> R
     Ok(0)
 }
 
-fn handle_complete_command(remainder: &str, args: &[String]) -> Result<usize> {
+fn handle_complete_command(_remainder: &str, args: &[String]) -> Result<usize> {
     let command = args.last().unwrap();
 
     let output = format!("complete: {command}: no completion specification");
