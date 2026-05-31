@@ -75,8 +75,10 @@ fn current_word(line: &str, pos: usize) -> (usize, &str) {
     for (index, ch) in line.char_indices().rev() {
         if ch == ' ' {
             start = index + 1;
+            break;
         }
     }
+
     (start, line.get(start..pos).unwrap_or_default())
 }
 
