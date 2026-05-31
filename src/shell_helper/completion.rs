@@ -18,14 +18,18 @@ impl Completer for ShellHepler {
         let (start, prefix) = current_word(line, pos);
         let dir_path = find_directory(prefix);
 
-        if let Ok(dir) = fs::read_dir(dir_path.clone()) {
+        if let Ok(dir) = fs::read_dir(dir_path) {
             for file in dir {
                 let file = file?;
-                let file_path = file.path();
+                let file_path: String = file.path().to_string_lossy().into();
 
-                if file_path.starts_with(&dir_path) {
-                    let file_path: String = file_path.to_string_lossy().into();
-                    let candidate = format!("{file_path} ");
+                let mut path = file_path.as_str();
+                if file_path.starts_with("./") {
+                    path = file_path.get(2..).unwrap_or_default();
+                }
+
+                if path.starts_with(&prefix) {
+                    let candidate = format!("{path} ");
                     return Ok((start, vec![candidate]));
                 }
             }
