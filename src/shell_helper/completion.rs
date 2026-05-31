@@ -1,4 +1,4 @@
-use std::{fs, io::Write};
+use std::{fs, io::Write, path::PathBuf};
 
 use rustyline::completion::Completer;
 
@@ -16,14 +16,15 @@ impl Completer for ShellHepler {
         _ctx: &rustyline::Context<'_>,
     ) -> rustyline::Result<(usize, Vec<Self::Candidate>)> {
         let (start, prefix) = current_word(line, pos);
+        let (incomplete_file_name, dir) = find_directory(prefix);
 
-        if let Ok(dir) = fs::read_dir(".") {
+        if let Ok(dir) = fs::read_dir(dir) {
             for file in dir {
                 let file = file?;
                 let entry = file.file_name();
                 let mut name: String = entry.to_string_lossy().into();
 
-                if name.starts_with(prefix) {
+                if name.starts_with(&incomplete_file_name) {
                     name.push(' ');
                     return Ok((start, vec![name]));
                 }
@@ -105,6 +106,20 @@ fn longest_common_prefix(prefix: &str, candidates: &[String]) -> String {
     }
 
     extended
+}
+
+fn find_directory(prefix: &str) -> (String, PathBuf) {
+    let parts = prefix.split("/");
+    let mut dir = PathBuf::new();
+
+    for part in parts {
+        dir.push(part);
+    }
+
+    let incomplete_file_name = dir.file_name().unwrap_or_default().to_string_lossy().into();
+    dir.pop();
+
+    (incomplete_file_name, dir)
 }
 
 fn ring_bell() -> rustyline::Result<()> {
