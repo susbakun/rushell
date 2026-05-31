@@ -16,17 +16,17 @@ impl Completer for ShellHepler {
         _ctx: &rustyline::Context<'_>,
     ) -> rustyline::Result<(usize, Vec<Self::Candidate>)> {
         let (start, prefix) = current_word(line, pos);
-        let (incomplete_file_name, dir) = find_directory(prefix);
+        let dir_path = find_directory(prefix);
 
-        if let Ok(dir) = fs::read_dir(dir) {
+        if let Ok(dir) = fs::read_dir(dir_path.clone()) {
             for file in dir {
                 let file = file?;
-                let entry = file.file_name();
-                let mut name: String = entry.to_string_lossy().into();
+                let file_path = file.path();
 
-                if name.starts_with(&incomplete_file_name) {
-                    name.push(' ');
-                    return Ok((start, vec![name]));
+                if file_path.starts_with(&dir_path) {
+                    let file_path: String = file_path.to_string_lossy().into();
+                    let candidate = format!("{file_path} ");
+                    return Ok((start, vec![candidate]));
                 }
             }
         }
@@ -108,7 +108,7 @@ fn longest_common_prefix(prefix: &str, candidates: &[String]) -> String {
     extended
 }
 
-fn find_directory(prefix: &str) -> (String, PathBuf) {
+fn find_directory(prefix: &str) -> PathBuf {
     let parts = prefix.split("/");
     let mut dir = PathBuf::new();
 
@@ -116,10 +116,11 @@ fn find_directory(prefix: &str) -> (String, PathBuf) {
         dir.push(part);
     }
 
-    let incomplete_file_name = dir.file_name().unwrap_or_default().to_string_lossy().into();
-    dir.pop();
+    if !prefix.ends_with("/") {
+        dir.pop();
+    }
 
-    (incomplete_file_name, dir)
+    dir
 }
 
 fn ring_bell() -> rustyline::Result<()> {
