@@ -16,29 +16,9 @@ impl Completer for ShellHepler {
         _ctx: &rustyline::Context<'_>,
     ) -> rustyline::Result<(usize, Vec<Self::Candidate>)> {
         let (start, prefix) = current_word(line, pos);
-        let dir_path = find_directory(prefix);
 
-        if let Ok(dir) = fs::read_dir(dir_path) {
-            for file in dir {
-                let file = file?;
-                let file_path = file.path();
-                let is_dir = file_path.is_dir();
-
-                let mut path = file_path.to_str().unwrap_or_default();
-                if path.starts_with("./") {
-                    path = path.get(2..).unwrap_or_default();
-                }
-
-                if path.starts_with(&prefix) {
-                    let candidate = if is_dir {
-                        format!("{path}/")
-                    } else {
-                        format!("{path} ")
-                    };
-
-                    return Ok((start, vec![candidate]));
-                }
-            }
+        if start > 0 {
+            return self.complete_path(start, prefix, line);
         }
 
         let candidates = matching_commands(&self.exe_commands, prefix);
@@ -50,14 +30,34 @@ impl Completer for ShellHepler {
 
         match candidates.len() {
             0 | 1 => Ok((start, candidates)),
-            _ => self.complete_ambiguous(line, prefix, &candidates),
+            _ => self.complete_ambiguous(start, line, prefix, &candidates),
         }
     }
 }
 
 impl ShellHepler {
+    fn complete_path(
+        &self,
+        start: usize,
+        prefix: &str,
+        line: &str,
+    ) -> rustyline::Result<(usize, Vec<String>)> {
+        let candidates = matching_paths(prefix);
+
+        let extended = longest_common_prefix(prefix, &candidates);
+        if prefix != extended {
+            return Ok((start, vec![extended]));
+        }
+
+        match candidates.len() {
+            0 | 1 => Ok((start, candidates)),
+            _ => self.complete_ambiguous(start, line, prefix, &candidates),
+        }
+    }
+
     fn complete_ambiguous(
         &self,
+        start: usize,
         line: &str,
         prefix: &str,
         candidates: &[String],
@@ -66,7 +66,7 @@ impl ShellHepler {
             1 => ring_bell()?,
             _ => print_candidates(line, candidates)?,
         }
-        Ok((0, vec![]))
+        Ok((start, vec![]))
     }
 }
 
@@ -78,6 +78,49 @@ fn current_word(line: &str, pos: usize) -> (usize, &str) {
         }
     }
     (start, line.get(start..pos).unwrap_or_default())
+}
+
+fn matching_paths(prefix: &str) -> Vec<String> {
+    let (dir, name_prefix, base) = path_parts(prefix);
+    let Ok(entries) = fs::read_dir(dir) else {
+        return Vec::new();
+    };
+
+    let mut candidates = entries
+        .flatten()
+        .filter_map(|entry| {
+            let name = entry.file_name().to_string_lossy().to_string();
+            if !name.starts_with(name_prefix) {
+                return None;
+            }
+
+            let suffix = if entry.path().is_dir() { "/" } else { " " };
+            Some(format!("{base}{name}{suffix}"))
+        })
+        .collect::<Vec<String>>();
+
+    candidates.sort();
+    candidates.dedup();
+    candidates
+}
+
+fn path_parts(prefix: &str) -> (PathBuf, &str, &str) {
+    if prefix.is_empty() {
+        return (PathBuf::from("."), "", "");
+    }
+
+    if prefix.ends_with('/') {
+        return (PathBuf::from(prefix), "", prefix);
+    }
+
+    if let Some(index) = prefix.rfind('/') {
+        let dir = PathBuf::from(&prefix[..index + 1]);
+        let name_prefix = &prefix[index + 1..];
+        let base = &prefix[..index + 1];
+        return (dir, name_prefix, base);
+    }
+
+    (PathBuf::from("."), prefix, "")
 }
 
 fn matching_commands(exe_commands: &[String], prefix: &str) -> Vec<String> {
@@ -116,27 +159,6 @@ fn longest_common_prefix(prefix: &str, candidates: &[String]) -> String {
     }
 
     extended
-}
-
-fn find_directory(prefix: &str) -> PathBuf {
-    let parts = prefix.split("/");
-    let mut dir = PathBuf::new();
-    let mut len = 0;
-
-    for part in parts {
-        dir.push(part);
-        len += 1;
-    }
-
-    if !prefix.ends_with("/") {
-        dir.pop();
-    }
-
-    if len == 1 {
-        dir.push(".");
-    }
-
-    dir
 }
 
 fn ring_bell() -> rustyline::Result<()> {
