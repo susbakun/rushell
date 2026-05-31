@@ -21,7 +21,9 @@ use shell_helper::*;
 
 use anyhow::{Result, anyhow};
 use is_executable::IsExecutable;
-use rustyline::{Editor, error::ReadlineError::Interrupted, history::DefaultHistory};
+use rustyline::{
+    CompletionType, Config, Editor, error::ReadlineError::Interrupted, history::DefaultHistory,
+};
 
 fn main() -> Result<()> {
     let paths = std::env::var("PATH").unwrap_or_default();
@@ -31,7 +33,10 @@ fn main() -> Result<()> {
 
     let helper = ShellHepler::new(exe_commands);
 
-    let mut rl = Editor::<ShellHepler, DefaultHistory>::new()?;
+    let config = Config::builder()
+        .completion_type(CompletionType::List)
+        .build();
+    let mut rl = Editor::<ShellHepler, DefaultHistory>::with_config(config)?;
     rl.set_helper(Some(helper));
 
     loop {

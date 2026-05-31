@@ -12,6 +12,8 @@ pub fn process_command(
         handle_echo_command(remainder, args)?;
     } else if command == "type" {
         handle_type_command(remainder, &paths, args)?;
+    } else if command == "complete" {
+        handle_complete_command(remainder, args)?;
     } else {
         handle_executable_command(args, command, &paths)?;
     }
@@ -46,6 +48,13 @@ fn handle_type_command(remainder: &str, paths: &Vec<&str>, args: &[String]) -> R
     }
 
     Ok(0)
+}
+
+fn handle_complete_command(_remainder: &str, args: &[String]) -> Result<usize> {
+    let command = args.last().unwrap();
+
+    let output = format!("complete: {command}: no completion specification");
+    process_output(&output, args, true)
 }
 
 fn handle_executable_command(args: &[String], command: &str, paths: &Vec<&str>) -> Result<usize> {
