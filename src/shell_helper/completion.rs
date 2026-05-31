@@ -1,4 +1,4 @@
-use std::io::Write;
+use std::{fs, io::Write};
 
 use rustyline::completion::Completer;
 
@@ -15,16 +15,30 @@ impl Completer for ShellHepler {
         pos: usize,
         _ctx: &rustyline::Context<'_>,
     ) -> rustyline::Result<(usize, Vec<Self::Candidate>)> {
-        let prefix = current_word(line, pos);
+        let (start, prefix) = current_word(line, pos);
+
+        if let Ok(dir) = fs::read_dir(".") {
+            for file in dir {
+                let file = file?;
+                let entry = file.file_name();
+                let mut name: String = entry.to_string_lossy().into();
+
+                if name.starts_with(prefix) {
+                    name.push(' ');
+                    return Ok((start, vec![name]));
+                }
+            }
+        }
+
         let candidates = matching_commands(&self.exe_commands, prefix);
 
         let extended = longest_common_prefix(prefix, &candidates);
         if prefix != extended {
-            return Ok((0, vec![extended]));
+            return Ok((start, vec![extended]));
         }
 
         match candidates.len() {
-            0 | 1 => Ok((0, candidates)),
+            0 | 1 => Ok((start, candidates)),
             _ => self.complete_ambiguous(line, prefix, &candidates),
         }
     }
@@ -45,14 +59,14 @@ impl ShellHepler {
     }
 }
 
-fn current_word(line: &str, pos: usize) -> &str {
+fn current_word(line: &str, pos: usize) -> (usize, &str) {
     let mut start = 0;
     for (index, ch) in line.char_indices().rev() {
         if ch == ' ' {
             start = index + 1;
         }
     }
-    line.get(start..pos).unwrap_or_default()
+    (start, line.get(start..pos).unwrap_or_default())
 }
 
 fn matching_commands(exe_commands: &[String], prefix: &str) -> Vec<String> {
@@ -81,7 +95,10 @@ fn longest_common_prefix(prefix: &str, candidates: &[String]) -> String {
 
     for ch in first.chars().skip(prefix.chars().count()) {
         extended.push(ch);
-        if candidates.iter().any(|candidate| !candidate.starts_with(&extended)) {
+        if candidates
+            .iter()
+            .any(|candidate| !candidate.starts_with(&extended))
+        {
             extended.pop();
             break;
         }
