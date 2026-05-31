@@ -21,15 +21,21 @@ impl Completer for ShellHepler {
         if let Ok(dir) = fs::read_dir(dir_path) {
             for file in dir {
                 let file = file?;
-                let file_path: String = file.path().to_string_lossy().into();
+                let file_path = file.path();
+                let is_dir = file_path.is_dir();
 
-                let mut path = file_path.as_str();
-                if file_path.starts_with("./") {
-                    path = file_path.get(2..).unwrap_or_default();
+                let mut path = file_path.to_str().unwrap_or_default();
+                if path.starts_with("./") {
+                    path = path.get(2..).unwrap_or_default();
                 }
 
                 if path.starts_with(&prefix) {
-                    let candidate = format!("{path} ");
+                    let candidate = if is_dir {
+                        format!("{path}/")
+                    } else {
+                        format!("{path} ")
+                    };
+
                     return Ok((start, vec![candidate]));
                 }
             }
