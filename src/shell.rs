@@ -65,8 +65,6 @@ impl Shell {
         self.complete_commands.insert(name.clone(), path.clone());
 
         self.paths.push(path.clone());
-
-        println!("{:?}", self.paths);
     }
 
     pub fn complete_command_registered(&self, command_name: &String) -> bool {
