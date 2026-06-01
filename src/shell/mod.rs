@@ -17,7 +17,7 @@ impl Shell {
 
         let exe_commands = find_command_names_on_path(&paths)?;
 
-        let helper = ShellHepler::new(exe_commands);
+        let helper = ShellHepler::new(exe_commands, paths);
 
         Ok(Self { helper })
     }
@@ -52,7 +52,7 @@ impl Shell {
                         command,
                         &remainder,
                         args,
-                        &&self.helper.exe_commands_path.clone(),
+                        &self.helper.exe_commands.clone(),
                     )?;
 
                     if let Some(helper) = rl.helper_mut() {

@@ -10,16 +10,18 @@ mod completion;
 
 #[derive(Clone)]
 pub struct ShellHepler {
-    pub(super) exe_commands_path: Vec<String>,
+    pub(super) exe_commands: Vec<String>,
+    pub(super) exe_paths: Vec<String>,
     pub(super) complete_commands: HashMap<String, String>,
     last_prefix: RefCell<Option<String>>,
     tab_count: RefCell<usize>,
 }
 
 impl ShellHepler {
-    pub fn new(exe_commands_path: Vec<String>) -> Self {
+    pub fn new(exe_commands: Vec<String>, exe_paths: Vec<String>) -> Self {
         Self {
-            exe_commands_path,
+            exe_commands,
+            exe_paths,
             complete_commands: HashMap::new(),
             last_prefix: RefCell::new(None),
             tab_count: RefCell::new(0),

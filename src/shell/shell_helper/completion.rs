@@ -25,7 +25,7 @@ impl Completer for ShellHepler {
             return self.complete_path(start, prefix, line);
         }
 
-        let candidates = matching_commands(&self.exe_commands_path, prefix);
+        let candidates = matching_commands(&self.exe_commands, prefix);
 
         let extended = longest_common_prefix(prefix, &candidates);
         if prefix != extended {
