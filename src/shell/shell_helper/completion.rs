@@ -51,7 +51,9 @@ impl ShellHepler {
         let line = String::from_utf8_lossy(output.stdout.as_slice());
         let line = line.trim().to_string();
 
-        return Ok((start, vec![line]));
+        let candidate = format!("{line} ");
+
+        return Ok((start, vec![candidate]));
     }
     fn complete_path(
         &self,
@@ -99,7 +101,7 @@ fn current_word(line: &str, pos: usize) -> (usize, &str, &str) {
     (
         start,
         line.get(0..start).unwrap_or_default(),
-        line.get(start..pos).unwrap_or_default(),
+        line.get(start - 1..pos).unwrap_or_default(),
     )
 }
 
