@@ -1,4 +1,4 @@
-use std::{fmt::format, fs, io::Write, path::PathBuf, process::Command};
+use std::{fs, io::Write, path::PathBuf, process::Command};
 
 use rustyline::completion::Completer;
 
@@ -52,7 +52,7 @@ impl ShellHepler {
         command: &str,
     ) -> rustyline::Result<(usize, Vec<String>)> {
         let args = line.split_whitespace().collect::<Vec<&str>>();
-        let previous = if args.len() >= 3 {
+        let previous = if args.len() >= 2 {
             args[args.len() - 2]
         } else {
             ""
@@ -84,6 +84,7 @@ impl ShellHepler {
             _ => self.complete_ambiguous(start, line, prefix, &candidates),
         }
     }
+
     fn complete_path(
         &self,
         start: usize,
