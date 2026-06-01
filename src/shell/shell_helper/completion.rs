@@ -79,6 +79,11 @@ impl ShellHepler {
             .map(|candidate| format!("{candidate} "))
             .collect();
 
+        let extended = longest_common_prefix(prefix, &candidates);
+        if prefix != extended {
+            return Ok((start, vec![extended]));
+        }
+
         match candidates.len() {
             0 | 1 => Ok((start, candidates)),
             _ => self.complete_ambiguous(start, line, prefix, &candidates),
