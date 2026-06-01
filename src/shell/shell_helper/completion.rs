@@ -17,12 +17,11 @@ impl Completer for ShellHepler {
     ) -> rustyline::Result<(usize, Vec<Self::Candidate>)> {
         let (start, command, prefix) = current_word(line, pos);
 
-        // checking complete commands
-        if let Some(path) = self.complete_commands.get(command) {
-            return self.complete_command(start, path);
-        }
-
         if start > 0 {
+            // checking complete commands
+            if let Some(path) = self.complete_commands.get(command) {
+                return self.complete_command(start, path);
+            }
             return self.complete_path(start, prefix, line);
         }
 
@@ -100,8 +99,8 @@ fn current_word(line: &str, pos: usize) -> (usize, &str, &str) {
 
     (
         start,
-        line.get(0..start).unwrap_or_default(),
-        line.get(start - 1..pos).unwrap_or_default(),
+        line.get(0..start - 1).unwrap_or_default(),
+        line.get(start..pos).unwrap_or_default(),
     )
 }
 
