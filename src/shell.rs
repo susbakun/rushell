@@ -68,6 +68,6 @@ impl Shell {
         // we already checked the existence of command
         let path = self.complete_commands.get(command_name).unwrap();
 
-        format!("complete -C {path} {command_name}")
+        format!("complete -C '{path}' {command_name}")
     }
 }
