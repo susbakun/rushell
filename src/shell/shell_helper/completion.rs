@@ -20,7 +20,7 @@ impl Completer for ShellHepler {
         if start > 0 {
             // checking complete commands
             if let Some(path) = self.complete_commands.get(command) {
-                return self.complete_registered_command(start, path);
+                return self.complete_registered_command(line, start, path, prefix, command);
             }
             // maybe it's a path
             return self.complete_path(start, prefix, line);
@@ -44,11 +44,24 @@ impl Completer for ShellHepler {
 impl ShellHepler {
     fn complete_registered_command(
         &self,
+        line: &str,
         start: usize,
         path: &String,
+        prefix: &str,
+        command: &str,
     ) -> rustyline::Result<(usize, Vec<String>)> {
-        // split at whitespcae index
-        let output = Command::new(path).output()?;
+        let args = line.split_whitespace().collect::<Vec<&str>>();
+        let previous = if args.len() >= 3 {
+            args[args.len() - 2]
+        } else {
+            ""
+        };
+
+        let output = Command::new(path)
+            .arg(command)
+            .arg(prefix)
+            .arg(previous)
+            .output()?;
         let line = String::from_utf8_lossy(output.stdout.as_slice());
         let line = line.trim().to_string();
 
@@ -102,14 +115,14 @@ fn current_word(line: &str, pos: usize) -> (usize, &str, &str) {
         if ch == ' ' {
             start = index + 1;
             break;
+        } else if index == 0 {
+            start = index;
         }
     }
 
-    (
-        start,
-        line.get(0..start - 1).unwrap_or_default(),
-        line.get(start..pos).unwrap_or_default(),
-    )
+    let command = line.split(" ").next().unwrap_or_default();
+
+    (start, command, line.get(start..pos).unwrap_or_default())
 }
 
 fn matching_paths(prefix: &str) -> Vec<String> {
