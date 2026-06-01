@@ -1,4 +1,4 @@
-use std::{fs, io::Write, path::PathBuf};
+use std::{fs, io::Write, path::PathBuf, process::Command};
 
 use rustyline::completion::Completer;
 
@@ -15,7 +15,12 @@ impl Completer for ShellHepler {
         pos: usize,
         _ctx: &rustyline::Context<'_>,
     ) -> rustyline::Result<(usize, Vec<Self::Candidate>)> {
-        let (start, prefix) = current_word(line, pos);
+        let (start, command, prefix) = current_word(line, pos);
+
+        // checking complete commands
+        if let Some(path) = self.complete_commands.get(command) {
+            return self.complete_command(start, path);
+        }
 
         if start > 0 {
             return self.complete_path(start, prefix, line);
@@ -36,6 +41,18 @@ impl Completer for ShellHepler {
 }
 
 impl ShellHepler {
+    fn complete_command(
+        &self,
+        start: usize,
+        path: &String,
+    ) -> rustyline::Result<(usize, Vec<String>)> {
+        // split at whitespcae index
+        let output = Command::new(path).output()?;
+        let line = String::from_utf8_lossy(output.stdout.as_slice());
+        let line = line.trim().to_string();
+
+        return Ok((start, vec![line]));
+    }
     fn complete_path(
         &self,
         start: usize,
@@ -70,7 +87,7 @@ impl ShellHepler {
     }
 }
 
-fn current_word(line: &str, pos: usize) -> (usize, &str) {
+fn current_word(line: &str, pos: usize) -> (usize, &str, &str) {
     let mut start = 0;
     for (index, ch) in line.char_indices().rev() {
         if ch == ' ' {
@@ -79,7 +96,11 @@ fn current_word(line: &str, pos: usize) -> (usize, &str) {
         }
     }
 
-    (start, line.get(start..pos).unwrap_or_default())
+    (
+        start,
+        line.get(0..start).unwrap_or_default(),
+        line.get(start..pos).unwrap_or_default(),
+    )
 }
 
 fn matching_paths(prefix: &str) -> Vec<String> {
