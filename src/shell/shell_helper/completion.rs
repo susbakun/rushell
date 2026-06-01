@@ -20,11 +20,13 @@ impl Completer for ShellHepler {
         if start > 0 {
             // checking complete commands
             if let Some(path) = self.complete_commands.get(command) {
-                return self.complete_command(start, path);
+                return self.complete_registered_command(start, path);
             }
+            // maybe it's a path
             return self.complete_path(start, prefix, line);
         }
 
+        // otherwise we look for the exe commands candidates
         let candidates = matching_commands(&self.exe_commands, prefix);
 
         let extended = longest_common_prefix(prefix, &candidates);
@@ -40,7 +42,7 @@ impl Completer for ShellHepler {
 }
 
 impl ShellHepler {
-    fn complete_command(
+    fn complete_registered_command(
         &self,
         start: usize,
         path: &String,
@@ -49,6 +51,12 @@ impl ShellHepler {
         let output = Command::new(path).output()?;
         let line = String::from_utf8_lossy(output.stdout.as_slice());
         let line = line.trim().to_string();
+
+        // nothing was found
+        if line.is_empty() {
+            ring_bell()?;
+            return Ok((start, vec![]));
+        }
 
         let candidate = format!("{line} ");
 
