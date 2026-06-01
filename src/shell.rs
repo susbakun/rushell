@@ -1,24 +1,29 @@
-use std::collections::HashMap;
-
 use super::*;
+
+use std::collections::HashMap;
 
 pub struct Shell {
     // name -> path
     complete_commands: HashMap<String, String>,
+    paths: Vec<String>,
 }
 
 impl Shell {
     pub fn new() -> Self {
+        let paths = std::env::var("PATH").unwrap_or_default();
+        let paths = paths
+            .split(":")
+            .map(|path| path.to_string())
+            .collect::<Vec<String>>();
+
         Self {
             complete_commands: HashMap::new(),
+            paths,
         }
     }
 
     pub fn run(&mut self) -> Result<()> {
-        let paths = std::env::var("PATH").unwrap_or_default();
-        let paths = paths.split(":").collect::<Vec<&str>>();
-
-        let exe_commands = find_command_names_on_path(&paths)?;
+        let exe_commands = find_command_names_on_path(&self.paths)?;
 
         let helper = ShellHepler::new(exe_commands);
 
@@ -46,7 +51,7 @@ impl Shell {
 
                     let remainder = args_without_redirect(args).join(" ");
 
-                    process_command(self, command, &remainder, args, &paths)?;
+                    process_command(self, command, &remainder, args, &self.paths.clone())?;
                 }
                 Err(Interrupted) => break Ok(()),
                 Err(err) => break Err(anyhow!("{err}")),
@@ -58,6 +63,10 @@ impl Shell {
         let (path, name) = command;
 
         self.complete_commands.insert(name.clone(), path.clone());
+
+        self.paths.push(path.clone());
+
+        println!("{:?}", self.paths);
     }
 
     pub fn complete_command_registered(&self, command_name: &String) -> bool {

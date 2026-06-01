@@ -6,6 +6,12 @@ use std::{
     process::Command,
 };
 
+use is_executable::IsExecutable;
+
+use rustyline::error::ReadlineError::Interrupted;
+use rustyline::history::DefaultHistory;
+use rustyline::{CompletionType, Config, Editor};
+
 mod commands;
 use commands::*;
 mod utils;
@@ -22,10 +28,6 @@ mod shell;
 use shell::*;
 
 use anyhow::{Result, anyhow};
-use is_executable::IsExecutable;
-use rustyline::{
-    CompletionType, Config, Editor, error::ReadlineError::Interrupted, history::DefaultHistory,
-};
 
 fn main() -> Result<()> {
     let mut shell = Shell::new();

@@ -5,14 +5,14 @@ pub fn process_command(
     command: &str,
     remainder: &str,
     args: &[String],
-    paths: &Vec<&str>,
+    paths: &Vec<String>,
 ) -> Result<()> {
     if command == "exit" {
         handle_exit_command();
     } else if command == "echo" {
         handle_echo_command(remainder, args)?;
     } else if command == "type" {
-        handle_type_command(remainder, &paths, args)?;
+        handle_type_command(remainder, paths, args)?;
     } else if command == "complete" {
         handle_complete_command(shell, args)?;
     } else {
@@ -31,7 +31,7 @@ fn handle_echo_command(remainder: &str, args: &[String]) -> Result<usize> {
     process_output(&output, args, false)
 }
 
-fn handle_type_command(remainder: &str, paths: &Vec<&str>, args: &[String]) -> Result<usize> {
+fn handle_type_command(remainder: &str, paths: &Vec<String>, args: &[String]) -> Result<usize> {
     if KNOWN_COMMANDS.contains(&&remainder[..]) {
         let output = format!("{remainder} is a shell builtin");
         process_output(&output, args, false)?;
@@ -74,7 +74,7 @@ fn handle_complete_command(shell: &mut Shell, args: &[String]) -> Result<usize> 
     process_output(&output, args, true)
 }
 
-fn handle_executable_command(args: &[String], command: &str, paths: &Vec<&str>) -> Result<usize> {
+fn handle_executable_command(args: &[String], command: &str, paths: &Vec<String>) -> Result<usize> {
     let (_, found) = find_exe(paths, command)?;
     let exec_args = args_without_redirect(args);
 

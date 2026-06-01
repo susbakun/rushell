@@ -76,7 +76,7 @@ pub fn args_without_redirect(args: &[String]) -> Vec<String> {
     new_args
 }
 
-pub fn find_exe(paths: &Vec<&str>, command: &str) -> Result<(Option<PathBuf>, bool)> {
+pub fn find_exe(paths: &Vec<String>, command: &str) -> Result<(Option<PathBuf>, bool)> {
     let mut found = false;
     for path in paths {
         if path.is_empty() {
@@ -103,7 +103,7 @@ pub fn find_exe(paths: &Vec<&str>, command: &str) -> Result<(Option<PathBuf>, bo
     Ok((None, found))
 }
 
-pub fn find_command_names_on_path(paths: &Vec<&str>) -> Result<Vec<String>> {
+pub fn find_command_names_on_path(paths: &Vec<String>) -> Result<Vec<String>> {
     let mut commands: Vec<String> = Vec::new();
 
     for path in paths {
