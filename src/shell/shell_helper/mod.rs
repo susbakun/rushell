@@ -7,19 +7,24 @@ use rustyline::validate::Validator;
 
 mod completion;
 
+#[derive(Clone)]
 pub struct ShellHepler {
-    pub(super) exe_commands: Vec<String>,
+    pub(super) exe_commands_path: Vec<String>,
     last_prefix: RefCell<Option<String>>,
     tab_count: RefCell<usize>,
 }
 
 impl ShellHepler {
-    pub fn new(exe_commands: Vec<String>) -> Self {
+    pub fn new(exe_commands_path: Vec<String>) -> Self {
         Self {
-            exe_commands,
+            exe_commands_path,
             last_prefix: RefCell::new(None),
             tab_count: RefCell::new(0),
         }
+    }
+
+    pub fn add_exe_command(&mut self, path: String) {
+        self.exe_commands_path.push(path);
     }
 
     pub(super) fn tab_press_count(&self, prefix: &str) -> usize {

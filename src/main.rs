@@ -22,14 +22,12 @@ mod constants;
 use constants::*;
 mod output;
 use output::*;
-mod shell_helper;
-use shell_helper::*;
 mod shell;
 use shell::*;
 
 use anyhow::{Result, anyhow};
 
 fn main() -> Result<()> {
-    let mut shell = Shell::new();
+    let mut shell = Shell::new()?;
     shell.run()
 }
