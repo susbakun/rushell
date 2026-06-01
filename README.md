@@ -10,6 +10,7 @@ A minimal POSIX-style shell built in Rust, built as part of the [Codecrafters "B
   * `echo`
   * `exit`
   * `type`
+  * `complete`
 * Resolve executables using `PATH`
 * Execute external programs
 * Quoted arguments support
@@ -37,7 +38,7 @@ A minimal POSIX-style shell built in Rust, built as part of the [Codecrafters "B
 
   * **Command names** (first word)
 
-    * Builtins: `echo`, `exit`, `type`
+    * Builtins: `echo`, `exit`, `type`, `complete`
     * Executables discovered on `PATH` at startup
     * First **Tab**: beep if multiple matches; extend to the longest common prefix when possible
     * Second **Tab**: list all matching commands (bash-style)
@@ -47,6 +48,13 @@ A minimal POSIX-style shell built in Rust, built as part of the [Codecrafters "B
     * Supports nested paths (e.g. `bee/` → `bee/rat/`)
     * Directories get a trailing `/`; files get a trailing space
     * Same ambiguous-completion behavior: beep on first **Tab**, list on second **Tab**
+  * **Programmable completion** (via `complete -C`)
+
+    * Register an external completer script for a command
+    * On **Tab**, the shell invokes the script and uses its stdout suggestions
+    * Passes three arguments to the completer: command name, current word, previous word
+    * Sets `COMP_LINE` and `COMP_POINT` environment variables for the script
+    * Supports single and multiple candidates (beep + list on second **Tab**)
 
 ## Examples
 
@@ -107,6 +115,61 @@ $ stat <Tab>       # completes to "stat bee/" when bee/ exists in cwd
 $ stat bee/<Tab>   # completes to "stat bee/rat/" when rat/ is inside bee/
 ```
 
+### Programmable completion (`complete`)
+
+Register a completer script for a command:
+
+```sh
+$ complete -C /path/to/completer_script git
+```
+
+Print the registered specification:
+
+```sh
+$ complete -p git
+complete -C '/path/to/completer_script' git
+```
+
+Remove a registered completer:
+
+```sh
+$ complete -r git
+```
+
+When the user presses **Tab** on a registered command, the shell runs the completer script with:
+
+| Argument | Meaning |
+|---|---|
+| `argv[1]` | Command name (e.g. `git`) |
+| `argv[2]` | Word currently being completed |
+| `argv[3]` | Word immediately before the current word (empty string if none) |
+
+The shell also sets:
+
+| Variable | Meaning |
+|---|---|
+| `COMP_LINE` | Full command line being completed |
+| `COMP_POINT` | Cursor position in `COMP_LINE` |
+
+Example — given `git remote set<Tab>`:
+
+```sh
+# Shell invokes:
+/path/to/completer_script git set remote
+
+# Environment:
+COMP_LINE=git remote set
+COMP_POINT=14
+```
+
+The completer prints candidates to stdout (one per line). The shell picks the best match, or beeps and lists options on a second **Tab** when multiple candidates match.
+
+```sh
+$ git che<Tab>         # beep (checkout and cherry-pick both match)
+$ git che<Tab><Tab>    # lists: checkout  cherry-pick
+$ git remote set<Tab>  # completes to: git remote set-url
+```
+
 ## Build
 
 ```sh
@@ -131,15 +194,17 @@ cargo run
 
 ```text
 src/
-├── main.rs              # REPL loop (rustyline)
-├── shell_helper/
-│   ├── mod.rs           # rustyline helper + tab state
-│   └── completion.rs    # command + path/directory completion
-├── commands.rs          # builtin / external dispatch
-├── output.rs            # stdout/stderr and redirection
-├── utils.rs             # parsing, PATH lookup
-├── file.rs              # redirect targets
-└── constants.rs         # builtins, redirect operators
+├── main.rs                    # entry point
+├── shell/
+│   ├── mod.rs                 # REPL loop (rustyline), shell state
+│   └── shell_helper/
+│       ├── mod.rs             # rustyline helper + completion registry
+│       └── completion.rs      # command, path, and -C completer logic
+├── commands.rs                # builtin / external dispatch
+├── output.rs                  # stdout/stderr and redirection
+├── utils.rs                   # parsing, PATH lookup
+├── file.rs                    # redirect targets
+└── constants.rs               # builtins, redirect operators
 ```
 
 ## Challenge
@@ -156,7 +221,7 @@ This project is intentionally minimal and focuses on learning how shells work in
 * redirection
 * PATH resolution
 * shell builtin behavior
-* readline-style editing and tab completion (commands, paths, and directories)
+* readline-style editing and tab completion (commands, paths, directories, and external completer scripts)
 
 Some advanced shell features (pipes, job control, subshells, globbing, etc.) may still be work in progress depending on the current challenge stage. ([docs.codecrafters.io][1])
 
