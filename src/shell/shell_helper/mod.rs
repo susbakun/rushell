@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::collections::HashMap;
 
 use rustyline::Helper;
 use rustyline::highlight::Highlighter;
@@ -10,6 +11,7 @@ mod completion;
 #[derive(Clone)]
 pub struct ShellHepler {
     pub(super) exe_commands_path: Vec<String>,
+    pub(super) complete_commands: HashMap<String, String>,
     last_prefix: RefCell<Option<String>>,
     tab_count: RefCell<usize>,
 }
@@ -18,13 +20,23 @@ impl ShellHepler {
     pub fn new(exe_commands_path: Vec<String>) -> Self {
         Self {
             exe_commands_path,
+            complete_commands: HashMap::new(),
             last_prefix: RefCell::new(None),
             tab_count: RefCell::new(0),
         }
     }
 
-    pub fn add_exe_command(&mut self, path: String) {
-        self.exe_commands_path.push(path);
+    pub fn register_complete_command(&mut self, name: String, completer_path: String) {
+        self.complete_commands.insert(name, completer_path);
+    }
+
+    pub fn complete_command_registered(&self, command_name: &String) -> bool {
+        self.complete_commands.contains_key(command_name)
+    }
+
+    pub fn get_formatted_completion_command(&self, command_name: &String) -> String {
+        let path = self.complete_commands.get(command_name).unwrap();
+        format!("complete -C '{path}' {command_name}")
     }
 
     pub(super) fn tab_press_count(&self, prefix: &str) -> usize {

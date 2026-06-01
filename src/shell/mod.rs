@@ -1,13 +1,9 @@
 use super::*;
 
-use std::collections::HashMap;
-
 mod shell_helper;
 use shell_helper::*;
 
 pub struct Shell {
-    // name -> path
-    complete_commands: HashMap<String, String>,
     helper: ShellHepler,
 }
 
@@ -23,10 +19,7 @@ impl Shell {
 
         let helper = ShellHepler::new(exe_commands);
 
-        Ok(Self {
-            complete_commands: HashMap::new(),
-            helper,
-        })
+        Ok(Self { helper })
     }
 
     pub fn run(&mut self) -> Result<()> {
@@ -61,6 +54,10 @@ impl Shell {
                         args,
                         &&self.helper.exe_commands_path.clone(),
                     )?;
+
+                    if let Some(helper) = rl.helper_mut() {
+                        *helper = self.helper.clone();
+                    }
                 }
                 Err(Interrupted) => break Ok(()),
                 Err(err) => break Err(anyhow!("{err}")),
@@ -69,21 +66,16 @@ impl Shell {
     }
 
     pub fn add_complete_command(&mut self, command: (&String, &String)) {
-        let (path, name) = command;
-
-        self.complete_commands.insert(name.clone(), path.clone());
-
-        self.helper.add_exe_command(path.clone());
+        let (completer_path, name) = command;
+        self.helper
+            .register_complete_command(name.clone(), completer_path.clone());
     }
 
     pub fn complete_command_registered(&self, command_name: &String) -> bool {
-        self.complete_commands.contains_key(command_name)
+        self.helper.complete_command_registered(command_name)
     }
 
     pub fn get_formatted_completion_command(&self, command_name: &String) -> String {
-        // we already checked the existence of command
-        let path = self.complete_commands.get(command_name).unwrap();
-
-        format!("complete -C '{path}' {command_name}")
+        self.helper.get_formatted_completion_command(command_name)
     }
 }
