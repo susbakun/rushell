@@ -1,4 +1,4 @@
-use std::{fs, io::Write, path::PathBuf, process::Command};
+use std::{fmt::format, fs, io::Write, path::PathBuf, process::Command};
 
 use rustyline::completion::Completer;
 
@@ -70,18 +70,19 @@ impl ShellHepler {
             .arg(prefix)
             .arg(previous)
             .output()?;
-        let line = String::from_utf8_lossy(output.stdout.as_slice());
-        let line = line.trim().to_string();
+        let stdout = String::from_utf8_lossy(output.stdout.as_slice());
 
-        // nothing was found
-        if line.is_empty() {
-            ring_bell()?;
-            return Ok((start, vec![]));
+        let candidates: Vec<String> = stdout
+            .lines()
+            .map(str::trim)
+            .filter(|line| !line.is_empty())
+            .map(|candidate| format!("{candidate} "))
+            .collect();
+
+        match candidates.len() {
+            0 | 1 => Ok((start, candidates)),
+            _ => self.complete_ambiguous(start, line, prefix, &candidates),
         }
-
-        let candidate = format!("{line} ");
-
-        return Ok((start, vec![candidate]));
     }
     fn complete_path(
         &self,
