@@ -52,7 +52,7 @@ impl Shell {
                         command,
                         &remainder,
                         args,
-                        &self.helper.exe_commands.clone(),
+                        &self.helper.exe_paths.clone(),
                     )?;
 
                     if let Some(helper) = rl.helper_mut() {
