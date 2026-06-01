@@ -20,7 +20,7 @@ impl Completer for ShellHepler {
         if start > 0 {
             // checking complete commands
             if let Some(path) = self.complete_commands.get(command) {
-                return self.complete_registered_command(line, start, path, prefix, command);
+                return self.complete_registered_command(line, start, pos, path, prefix, command);
             }
             // maybe it's a path
             return self.complete_path(start, prefix, line);
@@ -46,6 +46,7 @@ impl ShellHepler {
         &self,
         line: &str,
         start: usize,
+        pos: usize,
         path: &String,
         prefix: &str,
         command: &str,
@@ -56,6 +57,13 @@ impl ShellHepler {
         } else {
             ""
         };
+
+        // setting the env variables necessary
+        // for the completion script
+        unsafe {
+            std::env::set_var("COMP_LINE", line);
+            std::env::set_var("COMP_POINT", pos.to_string());
+        }
 
         let output = Command::new(path)
             .arg(command)
