@@ -71,6 +71,10 @@ impl Shell {
             .register_complete_command(name.clone(), completer_path.clone());
     }
 
+    pub fn remove_complete_command(&mut self, command_name: &String) {
+        self.helper.remove_complete_command(command_name);
+    }
+
     pub fn complete_command_registered(&self, command_name: &String) -> bool {
         self.helper.complete_command_registered(command_name)
     }

@@ -67,6 +67,9 @@ fn handle_complete_command(shell: &mut Shell, args: &[String]) -> Result<usize> 
     } else if flag == "-C" {
         let (path, command_name) = (&args[1], &args[2]);
         shell.add_complete_command((path, command_name));
+    } else if flag == "-r" {
+        let command_name = &args[1];
+        shell.remove_complete_command(command_name);
     } else {
         return Ok(0);
     }

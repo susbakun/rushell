@@ -32,6 +32,10 @@ impl ShellHepler {
         self.complete_commands.insert(name, completer_path);
     }
 
+    pub fn remove_complete_command(&mut self, command_name: &String) {
+        self.complete_commands.remove(command_name);
+    }
+
     pub fn complete_command_registered(&self, command_name: &String) -> bool {
         self.complete_commands.contains_key(command_name)
     }
