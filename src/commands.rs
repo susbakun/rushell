@@ -1,3 +1,5 @@
+use anyhow::Ok;
+
 use super::*;
 
 pub fn process_command(
@@ -15,6 +17,8 @@ pub fn process_command(
         handle_type_command(remainder, paths, args)?;
     } else if command == "complete" {
         handle_complete_command(shell, args)?;
+    } else if command == "jobs" {
+        handle_job_command()?;
     } else {
         handle_executable_command(args, command, &paths)?;
     }
@@ -75,6 +79,10 @@ fn handle_complete_command(shell: &mut Shell, args: &[String]) -> Result<usize> 
     }
 
     process_output(&output, args, true)
+}
+
+fn handle_job_command() -> Result<usize> {
+    Ok(0)
 }
 
 fn handle_executable_command(args: &[String], command: &str, paths: &Vec<String>) -> Result<usize> {

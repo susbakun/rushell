@@ -3,4 +3,4 @@ pub const STDOUT_APPEND_OPS: &[&str] = &[">>", "1>>"];
 pub const STDERROR_REDIRECT_OPS: &[&str] = &["2>"];
 pub const STDERROR_APPEND_OPS: &[&str] = &["2>>"];
 
-pub const KNOWN_COMMANDS: &[&str] = &["type", "exit", "echo", "complete"];
+pub const KNOWN_COMMANDS: &[&str] = &["type", "exit", "echo", "complete", "jobs"];
