@@ -1,6 +1,7 @@
 use super::*;
 
 pub fn process_command(
+    shell: &mut Shell,
     command: &str,
     remainder: &str,
     args: &[String],
@@ -13,7 +14,7 @@ pub fn process_command(
     } else if command == "type" {
         handle_type_command(remainder, &paths, args)?;
     } else if command == "complete" {
-        handle_complete_command(remainder, args)?;
+        handle_complete_command(shell, args)?;
     } else {
         handle_executable_command(args, command, &paths)?;
     }
@@ -50,10 +51,26 @@ fn handle_type_command(remainder: &str, paths: &Vec<&str>, args: &[String]) -> R
     Ok(0)
 }
 
-fn handle_complete_command(_remainder: &str, args: &[String]) -> Result<usize> {
-    let command = args.last().unwrap();
+fn handle_complete_command(shell: &mut Shell, args: &[String]) -> Result<usize> {
+    let flag = args.first();
+    let Some(flag) = flag else { return Ok(0) };
 
-    let output = format!("complete: {command}: no completion specification");
+    let mut output = String::new();
+
+    if flag == "-p" {
+        let command_name = &args[1];
+        if shell.complete_command_registered(&command_name) {
+            output = shell.get_formatted_completion_command(&command_name);
+        } else {
+            output = format!("complete: {command_name}: no completion specification");
+        }
+    } else if flag == "-C" {
+        let (path, command_name) = (&args[1], &args[2]);
+        shell.add_complete_command((path, command_name));
+    } else {
+        return Ok(0);
+    }
+
     process_output(&output, args, true)
 }
 
