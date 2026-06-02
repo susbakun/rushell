@@ -18,22 +18,31 @@ impl From<&JobStatus> for String {
 
 #[derive(Clone)]
 pub struct Job {
+    number: usize,
     status: JobStatus,
     command: String,
     child: Rc<RefCell<Child>>,
 }
 
 impl Job {
-    pub fn new(command: String, child: Child) -> Self {
+    pub fn new(number: usize, command: String, child: Child) -> Self {
         Job {
+            number,
             status: JobStatus::Running,
             command,
             child: Rc::new(RefCell::new(child)),
         }
     }
+    pub fn get_job_number(&self) -> usize {
+        self.number
+    }
 
     pub fn get_job_command(&self) -> &String {
         &self.command
+    }
+
+    pub fn get_job_status(&self) -> String {
+        (&self.status).into()
     }
 
     pub fn update_status(&mut self) -> Result<()> {
@@ -42,10 +51,6 @@ impl Job {
             None => {}
         }
         Ok(())
-    }
-
-    pub fn get_job_status(&self) -> String {
-        (&self.status).into()
     }
 
     pub fn is_job_finished(&self) -> bool {

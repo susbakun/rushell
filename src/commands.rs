@@ -89,7 +89,6 @@ fn handle_job_command(shell: &mut Shell, args: &[String]) -> Result<usize> {
     let n = jobs.len();
 
     for (ind, job) in jobs.iter().enumerate() {
-        let job_number = ind + 1;
         let padd = " ".repeat(17);
         let sign = if ind == n - 1 {
             "+"
@@ -105,11 +104,9 @@ fn handle_job_command(shell: &mut Shell, args: &[String]) -> Result<usize> {
             format!("{} &", job.get_job_command())
         };
         let job_status_str = job.get_job_status();
+        let job_number = job.get_job_number();
 
-        let formatted = format!(
-            "[{job_number}]{sign}  {}{padd}{job_command}\n",
-            job_status_str
-        );
+        let formatted = format!("[{job_number}]{sign}  {job_status_str}{padd}{job_command}\n");
         output.push_str(&formatted);
     }
 
@@ -148,11 +145,12 @@ fn handle_executable_command(
             .expect("failed to execute the command");
         let job_id = child.id();
 
-        let job = Job::new(job_command, child);
+        let number = shell.next_job_numbeer();
+        let job = Job::new(number, job_command, child);
 
         shell.add_job(job);
 
-        let output = format!("[{}] {}", shell.get_job_number(), job_id);
+        let output = format!("[{}] {}", number, job_id);
         return process_output(&output, args, false);
     }
 
