@@ -178,6 +178,7 @@ fn handle_executable_command(
 
         second.wait()?;
         first.wait()?;
+        return Ok(0);
     }
 
     let command_output = Command::new(command)
