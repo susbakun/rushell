@@ -34,6 +34,10 @@ pub fn run_pipeline(shell: &mut Shell, tokens: &Vec<String>) -> Result<()> {
         }
     }
 
+    for child in children.iter_mut() {
+        child.wait()?;
+    }
+
     Ok(())
 }
 
