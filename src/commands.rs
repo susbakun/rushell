@@ -145,7 +145,7 @@ fn handle_executable_command(
             .expect("failed to execute the command");
         let job_id = child.id();
 
-        let number = shell.next_job_numbeer();
+        let number = shell.next_job_number();
         let job = Job::new(number, job_command, child);
 
         shell.add_job(job);

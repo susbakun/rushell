@@ -99,7 +99,7 @@ impl Shell {
         self.helper.jobs()
     }
 
-    pub fn next_job_numbeer(&mut self) -> usize {
+    pub fn next_job_number(&mut self) -> usize {
         self.helper.next_job_number()
     }
 }

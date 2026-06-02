@@ -82,7 +82,7 @@ impl ShellHepler {
     }
 
     pub(super) fn next_job_number(&mut self) -> usize {
-        self.jobs.len()
+        self.jobs.len() + 1
     }
 }
 
