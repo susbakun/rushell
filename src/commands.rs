@@ -89,8 +89,8 @@ pub fn handle_jobs_command(shell: &mut Shell, args: &[String], only_done: bool) 
     let n = jobs.len();
 
     for (ind, job) in jobs.iter().enumerate() {
-        if !job.is_job_finished() && only_done {
-            return Ok(0);
+        if only_done && !job.is_job_finished() {
+            continue;
         }
 
         let padd = " ".repeat(17);
