@@ -86,6 +86,10 @@ impl ShellHepler {
     pub(super) fn next_job_number(&mut self) -> usize {
         self.jobs.len() + 1
     }
+
+    pub(super) fn add_command_to_history(&mut self, command: &String) {
+        self.history.push(command.to_string());
+    }
 }
 
 impl Hinter for ShellHepler {

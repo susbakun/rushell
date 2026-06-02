@@ -45,6 +45,8 @@ impl Shell {
                     if tokens.is_empty() {
                         continue;
                     }
+                    self.add_command_to_history(&line);
+
                     let command = &tokens[0];
                     let args = tokens.get(1..).unwrap_or_default();
 
@@ -106,5 +108,9 @@ impl Shell {
 
     pub fn history(&self) -> &Vec<String> {
         &self.helper.history
+    }
+
+    fn add_command_to_history(&mut self, command: &String) {
+        self.helper.add_command_to_history(command)
     }
 }
