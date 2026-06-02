@@ -16,6 +16,7 @@ pub struct ShellHepler {
     pub(super) exe_paths: Vec<String>,
     pub(super) complete_commands: HashMap<String, String>,
     pub(super) jobs: Vec<Job>,
+    pub(super) history: Vec<String>,
     last_prefix: RefCell<Option<String>>,
     tab_count: RefCell<usize>,
 }
@@ -26,9 +27,10 @@ impl ShellHepler {
             exe_commands,
             exe_paths,
             complete_commands: HashMap::new(),
+            jobs: vec![],
+            history: vec![],
             last_prefix: RefCell::new(None),
             tab_count: RefCell::new(0),
-            jobs: vec![],
         }
     }
 

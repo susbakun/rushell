@@ -103,4 +103,8 @@ impl Shell {
     pub fn next_job_number(&mut self) -> usize {
         self.helper.next_job_number()
     }
+
+    pub fn history(&self) -> &Vec<String> {
+        &self.helper.history
+    }
 }
