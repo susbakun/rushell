@@ -68,6 +68,7 @@ pub fn parse_args(args: &[String]) -> Vec<String> {
             || STDOUT_APPEND_OPS.contains(&args[i].as_str())
             || STDERROR_APPEND_OPS.contains(&args[i].as_str())
             || args[i] == "&"
+            || args[i] == "|"
         {
             break;
         }

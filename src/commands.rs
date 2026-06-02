@@ -1,3 +1,5 @@
+use std::process::Stdio;
+
 use anyhow::Ok;
 
 use super::*;
@@ -128,6 +130,7 @@ fn handle_executable_command(
     let (_, found) = find_exe(paths, command)?;
 
     let is_background_job = args.contains(&"&".to_string());
+    let is_piped_coomand = args.contains(&"|".to_string());
 
     let exec_args = parse_args(args);
 
@@ -158,8 +161,27 @@ fn handle_executable_command(
         return process_output(&output, args, false);
     }
 
+    if is_piped_coomand {
+        let mut first = Command::new(command)
+            .args(&exec_args)
+            .stdout(Stdio::piped())
+            .spawn()?;
+
+        let first_stdout = first.stdout.take().unwrap();
+
+        let second_part = args.split(|st| st == "|").nth(1).unwrap();
+        let second_command = second_part.get(0).unwrap();
+
+        let mut second = Command::new(second_command)
+            .stdin(Stdio::from(first_stdout))
+            .spawn()?;
+
+        second.wait()?;
+        first.wait()?;
+    }
+
     let command_output = Command::new(command)
-        .args(exec_args)
+        .args(&exec_args)
         .output()
         .expect("failed to execute the command");
 
