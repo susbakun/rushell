@@ -1,17 +1,6 @@
-use std::process::Stdio;
-
 use super::*;
 
-pub fn process_output(
-    output: &String,
-    args: &[String],
-    is_stderror: bool,
-    paths: &Vec<String>,
-) -> Result<usize> {
-    if is_piped(args) {
-        return output_piped_command(output, args, paths);
-    }
-
+pub fn process_output(output: &String, args: &[String], is_stderror: bool) -> Result<usize> {
     if has_std_redirect(args)
         || has_err_redirect(args)
         || has_std_append(args)
@@ -31,44 +20,6 @@ pub fn process_output(
     }
     io::stdout().flush()?;
     Ok(0)
-}
-
-pub fn output_piped_command(
-    output: &String,
-    args: &[String],
-    paths: &Vec<String>,
-) -> Result<usize> {
-    let (second_command, second_command_args) = get_command_after_pipe(args)?;
-    let second_command_args = second_command_args
-        .iter()
-        .map(|item| item.to_string())
-        .collect::<Vec<String>>();
-
-    let remainder = second_command_args.join(" ");
-
-    if second_command == "exit" {
-        handle_exit_command();
-    } else if second_command == "echo" {
-        return handle_echo_command(&remainder, paths, &second_command_args);
-    } else if second_command == "type" {
-        return handle_type_command(&remainder, paths, &second_command_args);
-    }
-
-    let mut second = Command::new(second_command)
-        .args(second_command_args)
-        .stdin(Stdio::piped())
-        .spawn()?;
-
-    second
-        .stdin
-        .as_mut()
-        .unwrap()
-        .write_all(output.as_bytes())?;
-
-    drop(second.stdin.take());
-
-    second.wait()?;
-    return Ok(0);
 }
 
 pub fn should_redirect(args: &[String], is_stderror: bool) -> bool {

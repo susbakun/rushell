@@ -60,38 +60,48 @@ pub fn parse_input(input: &str) -> Vec<String> {
 }
 
 pub fn parse_args(args: &[String]) -> Vec<String> {
+    segment_args(args)
+}
+
+pub fn segment_args(args: &[String]) -> Vec<String> {
     let mut new_args = Vec::new();
-    let mut i = 0;
-    while i < args.len() {
-        if STDOUT_REDIRECT_OPS.contains(&args[i].as_str())
-            || STDERROR_REDIRECT_OPS.contains(&args[i].as_str())
-            || STDOUT_APPEND_OPS.contains(&args[i].as_str())
-            || STDERROR_APPEND_OPS.contains(&args[i].as_str())
-            || args[i] == "&"
-            || args[i] == "|"
+    for arg in args {
+        if STDOUT_REDIRECT_OPS.contains(&arg.as_str())
+            || STDERROR_REDIRECT_OPS.contains(&arg.as_str())
+            || STDOUT_APPEND_OPS.contains(&arg.as_str())
+            || STDERROR_APPEND_OPS.contains(&arg.as_str())
+            || arg == "&"
+            || arg == "|"
         {
             break;
         }
-        new_args.push(args[i].clone());
-        i += 1;
+        new_args.push(arg.clone());
     }
     new_args
 }
 
-pub fn get_command_after_pipe(args: &[String]) -> Result<(&String, Vec<&String>)> {
-    let second_part = args
-        .split(|st| st == "|")
-        .nth(1)
-        .ok_or_else(|| anyhow!("couln't find the second part of the pipeline"))?;
-    let mut second_part = second_part.iter();
+pub fn split_pipeline(args: &[String]) -> Result<PipelineParts> {
+    let pipe_idx = args
+        .iter()
+        .position(|arg| arg == "|")
+        .ok_or_else(|| anyhow!("no pipe found"))?;
 
-    let second_command = second_part.next().unwrap();
-    let second_command_args = second_part.collect::<Vec<&String>>();
+    let left_args = args[..pipe_idx].to_vec();
+    let right_tokens = &args[pipe_idx + 1..];
+    let right_command = right_tokens
+        .first()
+        .ok_or_else(|| anyhow!("no command after pipe"))?
+        .clone();
+    let right_args = segment_args(right_tokens.get(1..).unwrap_or_default());
 
-    Ok((second_command, second_command_args))
+    Ok(PipelineParts {
+        left_args,
+        right_command,
+        right_args,
+    })
 }
 
-pub fn find_exe(paths: &Vec<String>, command: &str) -> Result<(Option<PathBuf>, bool)> {
+pub fn find_exe(paths: &[String], command: &str) -> Result<(Option<PathBuf>, bool)> {
     let mut found = false;
     for path in paths {
         if path.is_empty() {
@@ -118,7 +128,7 @@ pub fn find_exe(paths: &Vec<String>, command: &str) -> Result<(Option<PathBuf>, 
     Ok((None, found))
 }
 
-pub fn find_command_names_on_path(paths: &Vec<String>) -> Result<Vec<String>> {
+pub fn find_command_names_on_path(paths: &[String]) -> Result<Vec<String>> {
     let mut commands: Vec<String> = Vec::new();
 
     for path in paths {
@@ -146,4 +156,28 @@ pub fn find_command_names_on_path(paths: &Vec<String>) -> Result<Vec<String>> {
 
 pub fn is_piped(args: &[String]) -> bool {
     args.contains(&"|".to_string())
+}
+
+pub fn is_builtin_command(command: &str) -> bool {
+    KNOWN_COMMANDS.contains(&command)
+}
+
+pub fn format_echo_output(remainder: &str) -> String {
+    format!("{remainder}\n")
+}
+
+pub fn format_type_output(paths: &[String], remainder: &str) -> Result<String> {
+    if is_builtin_command(remainder) {
+        Ok(format!("{remainder} is a shell builtin\n"))
+    } else {
+        let (file_path, found) = find_exe(paths, remainder)?;
+        if found {
+            Ok(format!(
+                "{remainder} is {}\n",
+                file_path.unwrap().to_str().unwrap()
+            ))
+        } else {
+            Ok(format!("{remainder}: not found\n"))
+        }
+    }
 }

@@ -7,20 +7,23 @@ pub fn process_command(
     command: &str,
     remainder: &str,
     args: &[String],
-    paths: &Vec<String>,
 ) -> Result<()> {
+    if is_piped(args) {
+        return run_pipeline(shell, command, args);
+    }
+
     if command == "exit" {
         handle_exit_command();
     } else if command == "echo" {
-        handle_echo_command(remainder, paths, args)?;
+        handle_echo_command(remainder, args)?;
     } else if command == "type" {
-        handle_type_command(remainder, paths, args)?;
+        handle_type_command(remainder, shell, args)?;
     } else if command == "complete" {
-        handle_complete_command(shell, paths, args)?;
+        handle_complete_command(shell, args)?;
     } else if command == "jobs" {
-        handle_jobs_command(shell, paths, args, false)?;
+        handle_jobs_command(shell, args, false)?;
     } else {
-        handle_executable_command(shell, paths, args, command)?;
+        handle_executable_command(shell, args, command)?;
     }
 
     Ok(())
@@ -30,36 +33,17 @@ pub fn handle_exit_command() {
     std::process::exit(0);
 }
 
-pub fn handle_echo_command(remainder: &str, paths: &Vec<String>, args: &[String]) -> Result<usize> {
-    let output = format!("{remainder}\n");
-    process_output(&output, args, false, paths)
+pub fn handle_echo_command(remainder: &str, args: &[String]) -> Result<usize> {
+    process_output(&format_echo_output(remainder), args, false)
 }
 
-pub fn handle_type_command(remainder: &str, paths: &Vec<String>, args: &[String]) -> Result<usize> {
-    if KNOWN_COMMANDS.contains(&&remainder[..]) {
-        let output = format!("{remainder} is a shell builtin");
-        process_output(&output, args, false, paths)?;
-    } else {
-        let (file_path, found) = find_exe(paths, &remainder)?;
-        if found {
-            let file_path = file_path.unwrap();
-
-            let output = format!("{remainder} is {}", file_path.to_str().unwrap());
-            process_output(&output, args, false, paths)?;
-        } else {
-            let output = format!("{remainder}: not found");
-            process_output(&output, args, true, paths)?;
-        }
-    }
-
-    Ok(0)
+pub fn handle_type_command(remainder: &str, shell: &Shell, args: &[String]) -> Result<usize> {
+    let output = format_type_output(shell.paths(), remainder)?;
+    let is_stderror = output.contains(": not found");
+    process_output(&output, args, is_stderror)
 }
 
-pub fn handle_complete_command(
-    shell: &mut Shell,
-    paths: &Vec<String>,
-    args: &[String],
-) -> Result<usize> {
+pub fn handle_complete_command(shell: &mut Shell, args: &[String]) -> Result<usize> {
     let flag = args.first();
     let Some(flag) = flag else { return Ok(0) };
 
@@ -82,15 +66,10 @@ pub fn handle_complete_command(
         return Ok(0);
     }
 
-    process_output(&output, args, false, paths)
+    process_output(&output, args, false)
 }
 
-pub fn handle_jobs_command(
-    shell: &mut Shell,
-    paths: &Vec<String>,
-    args: &[String],
-    only_done: bool,
-) -> Result<usize> {
+pub fn handle_jobs_command(shell: &mut Shell, args: &[String], only_done: bool) -> Result<usize> {
     shell.refresh_jobs();
 
     let mut output = String::new();
@@ -125,24 +104,19 @@ pub fn handle_jobs_command(
 
     shell.reap_finished_jobs();
 
-    process_output(&output, args, false, paths)
+    process_output(&output, args, false)
 }
 
-fn handle_executable_command(
-    shell: &mut Shell,
-    paths: &Vec<String>,
-    args: &[String],
-    command: &str,
-) -> Result<usize> {
+fn handle_executable_command(shell: &mut Shell, args: &[String], command: &str) -> Result<usize> {
+    let paths = shell.paths();
     let (_, found) = find_exe(paths, command)?;
 
     let is_background_job = args.contains(&"&".to_string());
-
     let exec_args = parse_args(args);
 
     if !found {
         let output = format!("{command}: not found");
-        return process_output(&output, args, true, paths);
+        return process_output(&output, args, true);
     }
 
     if is_background_job {
@@ -164,7 +138,7 @@ fn handle_executable_command(
         shell.add_job(job);
 
         let output = format!("[{}] {}", number, job_id);
-        return process_output(&output, args, false, paths);
+        return process_output(&output, args, false);
     }
 
     let command_output = Command::new(command)
@@ -174,12 +148,12 @@ fn handle_executable_command(
 
     let stderr = String::from_utf8_lossy(&command_output.stderr).to_string();
     if !stderr.is_empty() {
-        process_output(&stderr, args, true, paths)?;
+        process_output(&stderr, args, true)?;
     }
 
     let stdout = String::from_utf8_lossy(&command_output.stdout);
     if !stdout.is_empty() {
-        process_output(&stdout.to_string(), args, false, paths)?;
+        process_output(&stdout.to_string(), args, false)?;
     }
 
     Ok(0)

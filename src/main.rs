@@ -24,6 +24,8 @@ mod output;
 use output::*;
 mod shell;
 use shell::*;
+mod pipeline;
+use pipeline::*;
 mod job;
 use job::*;
 

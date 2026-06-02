@@ -31,7 +31,7 @@ impl Shell {
 
         loop {
             // reap before the next prompt
-            handle_jobs_command(self, &self.helper.exe_paths.clone(), &[], true)?;
+            handle_jobs_command(self, &[], true)?;
 
             let readline = rl.readline("$ ");
 
@@ -50,13 +50,7 @@ impl Shell {
 
                     let remainder = parse_args(args).join(" ");
 
-                    process_command(
-                        self,
-                        command,
-                        &remainder,
-                        args,
-                        &self.helper.exe_paths.clone(),
-                    )?;
+                    process_command(self, command, &remainder, args)?;
 
                     if let Some(helper) = rl.helper_mut() {
                         *helper = self.helper.clone();
@@ -66,6 +60,10 @@ impl Shell {
                 Err(err) => break Err(anyhow!("{err}")),
             }
         }
+    }
+
+    pub fn paths(&self) -> &[String] {
+        &self.helper.exe_paths
     }
 
     pub fn add_complete_command(&mut self, command: (&String, &String)) {
