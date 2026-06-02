@@ -11,6 +11,7 @@ A minimal POSIX-style shell built in Rust, built as part of the [Codecrafters "B
   * `exit`
   * `type`
   * `complete`
+  * `jobs`
 * Resolve executables using `PATH`
 * Execute external programs
 * Quoted arguments support
@@ -31,14 +32,23 @@ A minimal POSIX-style shell built in Rust, built as part of the [Codecrafters "B
   * `1>>`
   * `2>>`
 * Separate stdout/stderr handling
-* Executable lookup using `PATH`
-* Handles commands with spaces in arguments
+* **Pipelines** (`|`)
+
+  * External → external (OS pipes, streaming — e.g. `tail -f file | head -n 5`)
+  * Builtin → external (e.g. `echo hello | wc`)
+  * External → builtin (e.g. `ls | type exit`)
+* **Background jobs** (`&`)
+
+  * Non-blocking execution with `[n] pid` job notification
+  * `jobs` lists running and recently finished jobs
+  * Finished jobs shown as `Done` once, then reaped
+  * Automatic done notifications printed before the next prompt
 * Interactive line editing via [rustyline](https://github.com/kkawakam/rustyline)
 * Tab completion
 
   * **Command names** (first word)
 
-    * Builtins: `echo`, `exit`, `type`, `complete`
+    * Builtins: `echo`, `exit`, `type`, `complete`, `jobs`
     * Executables discovered on `PATH` at startup
     * First **Tab**: beep if multiple matches; extend to the longest common prefix when possible
     * Second **Tab**: list all matching commands (bash-style)
@@ -72,6 +82,45 @@ echo is a shell builtin
 
 ```sh
 $ ls
+```
+
+### Pipelines
+
+```sh
+# external → external
+$ cat file.txt | wc
+       5      10      78
+
+# streaming (left command never exits on its own)
+$ tail -f /tmp/log | head -n 5
+
+# builtin → external
+$ echo pineapple-banana | wc
+       1       1      17
+
+# external → builtin
+$ ls | type exit
+exit is a shell builtin
+```
+
+### Background jobs
+
+```sh
+$ sleep 100 &
+[1] 12345
+
+$ jobs
+[1]+  Running                 sleep 100 &
+
+# After the job finishes, `jobs` shows it once as Done:
+$ jobs
+[1]+  Done                    sleep 100
+
+# Or it appears automatically before the next prompt:
+$ echo hello
+hello
+[1]+  Done                    sleep 100
+$
 ```
 
 ### Stdout redirection
@@ -194,17 +243,27 @@ cargo run
 
 ```text
 src/
-├── main.rs                    # entry point
+├── main.rs                         # entry point
 ├── shell/
-│   ├── mod.rs                 # REPL loop (rustyline), shell state
+│   ├── mod.rs                      # REPL loop, shell state, job reaping before prompt
 │   └── shell_helper/
-│       ├── mod.rs             # rustyline helper + completion registry
-│       └── completion.rs      # command, path, and -C completer logic
-├── commands.rs                # builtin / external dispatch
-├── output.rs                  # stdout/stderr and redirection
-├── utils.rs                   # parsing, PATH lookup
-├── file.rs                    # redirect targets
-└── constants.rs               # builtins, redirect operators
+│       ├── mod.rs                  # rustyline helper, job list, completion registry
+│       └── completion.rs           # command, path, and -C completer logic
+├── commands/
+│   ├── mod.rs                      # command dispatch
+│   ├── pipeline.rs                 # pipeline execution (builtin + external stages)
+│   ├── external_command.rs         # external commands and background jobs
+│   └── builtin/
+│       ├── echo_command.rs
+│       ├── exit_command.rs
+│       ├── type_command.rs
+│       ├── complete_command.rs
+│       └── jobs_command.rs
+├── job.rs                          # job status tracking (Running / Done)
+├── output.rs                       # stdout/stderr output and redirection
+├── utils.rs                        # parsing, PATH lookup, pipeline splitting
+├── file.rs                         # redirect targets
+└── constants.rs                    # builtins, redirect operators
 ```
 
 ## Challenge
@@ -218,11 +277,12 @@ This project is intentionally minimal and focuses on learning how shells work in
 * parsing input
 * process execution
 * handling stdout/stderr
-* redirection
+* redirection and pipelines
+* background job control
 * PATH resolution
 * shell builtin behavior
 * readline-style editing and tab completion (commands, paths, directories, and external completer scripts)
 
-Some advanced shell features (pipes, job control, subshells, globbing, etc.) may still be work in progress depending on the current challenge stage. ([docs.codecrafters.io][1])
+Some advanced shell features (subshells, globbing, `&&`/`||` chains, etc.) may still be work in progress depending on the current challenge stage. ([docs.codecrafters.io][1])
 
 [1]: https://docs.codecrafters.io/challenges/how-challenges-work?utm_source=chatgpt.com "How do challenges work? - CodeCrafters"
