@@ -80,25 +80,24 @@ pub fn segment_args(args: &[String]) -> Vec<String> {
     new_args
 }
 
-pub fn split_pipeline(args: &[String]) -> Result<PipelineParts> {
-    let pipe_idx = args
-        .iter()
-        .position(|arg| arg == "|")
-        .ok_or_else(|| anyhow!("no pipe found"))?;
+pub fn split_pipeline(tokens: &Vec<String>) -> Result<Vec<PipelineParts>> {
+    let mut parts = vec![];
 
-    let left_args = args[..pipe_idx].to_vec();
-    let right_tokens = &args[pipe_idx + 1..];
-    let right_command = right_tokens
-        .first()
-        .ok_or_else(|| anyhow!("no command after pipe"))?
-        .clone();
-    let right_args = segment_args(right_tokens.get(1..).unwrap_or_default());
+    let iter = tokens.split(|item| item == "|");
 
-    Ok(PipelineParts {
-        left_args,
-        right_command,
-        right_args,
-    })
+    for item in iter {
+        if item.is_empty() {
+            continue;
+        }
+
+        let command = item.get(0).unwrap().to_string();
+        let args = item.get(1..).unwrap_or_default().to_vec();
+
+        let part = PipelineParts { args, command };
+        parts.push(part);
+    }
+
+    Ok(parts)
 }
 
 pub fn find_exe(paths: &[String], command: &str) -> Result<(Option<PathBuf>, bool)> {

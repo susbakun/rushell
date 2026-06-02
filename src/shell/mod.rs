@@ -50,7 +50,7 @@ impl Shell {
 
                     let remainder = parse_args(args).join(" ");
 
-                    process_command(self, command, &remainder, args)?;
+                    process_command(self, command, &remainder, args, &tokens)?;
 
                     if let Some(helper) = rl.helper_mut() {
                         *helper = self.helper.clone();
