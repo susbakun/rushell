@@ -87,8 +87,16 @@ impl Shell {
         self.helper.add_job(job);
     }
 
-    pub fn get_jobs(&mut self) -> &Vec<Job> {
-        &self.helper.get_jobs()
+    pub fn refresh_jobs(&mut self) {
+        self.helper.refresh_jobs();
+    }
+
+    pub fn reap_finished_jobs(&mut self) {
+        self.helper.reap_finished_jobs();
+    }
+
+    pub fn jobs(&self) -> &Vec<Job> {
+        self.helper.jobs()
     }
 
     pub fn get_job_number(&mut self) -> usize {

@@ -62,14 +62,18 @@ impl ShellHepler {
         *self.tab_count.borrow()
     }
 
-    pub(super) fn get_jobs(&mut self) -> &Vec<Job> {
-        self.jobs.retain(|job| !job.is_job_finished());
-
-        self.jobs.iter_mut().for_each(|job| {
+    pub(super) fn refresh_jobs(&mut self) {
+        for job in &mut self.jobs {
             job.update_status()
-                .expect("failded to update the job status")
-        });
+                .expect("failed to update the job status");
+        }
+    }
 
+    pub(super) fn reap_finished_jobs(&mut self) {
+        self.jobs.retain(|job| !job.is_job_finished());
+    }
+
+    pub(super) fn jobs(&self) -> &Vec<Job> {
         &self.jobs
     }
 

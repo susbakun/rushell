@@ -82,24 +82,28 @@ fn handle_complete_command(shell: &mut Shell, args: &[String]) -> Result<usize> 
 }
 
 fn handle_job_command(shell: &mut Shell, args: &[String]) -> Result<usize> {
-    let mut output = String::new();
-    let n = shell.get_jobs().len();
+    shell.refresh_jobs();
 
-    for (ind, job) in shell.get_jobs().iter().enumerate() {
+    let mut output = String::new();
+    let jobs = shell.jobs();
+    let n = jobs.len();
+
+    for (ind, job) in jobs.iter().enumerate() {
         let job_number = ind + 1;
         let padd = " ".repeat(17);
         let sign = if ind == n - 1 {
-            // most recent
             "+"
         } else if ind == n - 2 {
-            // second most recent
             "-"
         } else {
-            // otherwise
             " "
         };
 
-        let job_command = job.get_job_command();
+        let job_command = if job.is_job_finished() {
+            job.get_job_command().to_string()
+        } else {
+            format!("{} &", job.get_job_command())
+        };
         let job_status_str = job.get_job_status();
 
         let formatted = format!(
@@ -108,6 +112,8 @@ fn handle_job_command(shell: &mut Shell, args: &[String]) -> Result<usize> {
         );
         output.push_str(&formatted);
     }
+
+    shell.reap_finished_jobs();
 
     process_output(&output, args, false)
 }
@@ -130,13 +136,16 @@ fn handle_executable_command(
     }
 
     if is_background_job {
+        let job_command = if exec_args.is_empty() {
+            command.to_string()
+        } else {
+            format!("{} {}", command, exec_args.join(" "))
+        };
+
         let child = Command::new(command)
-            .args(exec_args)
+            .args(&exec_args)
             .spawn()
             .expect("failed to execute the command");
-
-        let joined_args = args.join(" ");
-        let job_command = format!("{command} {joined_args}");
         let job_id = child.id();
 
         let job = Job::new(job_command, child);
