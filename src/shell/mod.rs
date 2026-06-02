@@ -31,7 +31,7 @@ impl Shell {
 
         loop {
             // reap before the next prompt
-            handle_jobs_command(self, &[], true)?;
+            handle_jobs_command(self, &self.helper.exe_paths.clone(), &[], true)?;
 
             let readline = rl.readline("$ ");
 
