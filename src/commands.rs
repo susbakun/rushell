@@ -99,7 +99,7 @@ fn handle_job_command(shell: &mut Shell, args: &[String]) -> Result<usize> {
             " "
         };
 
-        let formatted = format!("{job_number}{} Running{}{}", sign, padd, job);
+        let formatted = format!("[{job_number}]{} Running{}{}", sign, padd, job);
         output.push_str(&formatted);
     }
 
