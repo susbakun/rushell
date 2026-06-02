@@ -25,7 +25,7 @@ pub fn run_pipeline(shell: &mut Shell, tokens: &Vec<String>) -> Result<()> {
         let last = ind == n - 1;
 
         if is_builtin_command(&part.command) {
-            let stdout = run_builtin(shell, &part)?;
+            let stdout = run_builtin(shell, &part, last)?;
             prev_stdout = Some(PipelineInput::Text(stdout));
         } else {
             let (child, stdout) = run_external_pipeline(shell, &part, prev_stdout, last)?;
@@ -41,7 +41,7 @@ pub fn run_pipeline(shell: &mut Shell, tokens: &Vec<String>) -> Result<()> {
     Ok(())
 }
 
-fn run_builtin(shell: &Shell, part: &PipelineParts) -> Result<String> {
+fn run_builtin(shell: &Shell, part: &PipelineParts, last: bool) -> Result<String> {
     let args = &part.args;
     let remainder = args.join(" ");
 
@@ -50,6 +50,11 @@ fn run_builtin(shell: &Shell, part: &PipelineParts) -> Result<String> {
         "type" => format_type_output(shell.paths(), &remainder)?,
         _ => String::new(),
     };
+
+    if last {
+        process_output(&output, &part.args, false).unwrap();
+        return Ok(String::new());
+    }
 
     Ok(output)
 }
