@@ -82,7 +82,9 @@ fn handle_complete_command(shell: &mut Shell, args: &[String]) -> Result<usize> 
 }
 
 fn handle_job_command(shell: &mut Shell, args: &[String]) -> Result<usize> {
-    let job = shell.get_jobs().get(0).unwrap();
+    let Some(job) = shell.get_jobs().get(0) else {
+        return Ok(0);
+    };
 
     let padd = " ".repeat(17);
     let output = format!("[1]+ Running{padd}{job}");
