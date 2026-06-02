@@ -18,7 +18,7 @@ pub fn process_command(
     } else if command == "complete" {
         handle_complete_command(shell, args)?;
     } else if command == "jobs" {
-        handle_job_command()?;
+        handle_job_command(shell, args)?;
     } else {
         handle_executable_command(shell, args, command, &paths)?;
     }
@@ -81,8 +81,12 @@ fn handle_complete_command(shell: &mut Shell, args: &[String]) -> Result<usize> 
     process_output(&output, args, true)
 }
 
-fn handle_job_command() -> Result<usize> {
-    Ok(0)
+fn handle_job_command(shell: &mut Shell, args: &[String]) -> Result<usize> {
+    let job = shell.get_jobs().get(0).unwrap();
+
+    let padd = " ".repeat(17);
+    let output = format!("[1]+ Running{padd}{job}");
+    process_output(&output, args, false)
 }
 
 fn handle_executable_command(
@@ -107,6 +111,11 @@ fn handle_executable_command(
             .args(exec_args)
             .spawn()
             .expect("failed to execute the command");
+
+        let joined_args = args.join(" ");
+        let job_command = format!("{command} {joined_args}");
+
+        shell.add_job(job_command);
 
         let output = format!("[{}] {}", shell.get_job_number(), child.id());
         return process_output(&output, args, false);
