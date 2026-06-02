@@ -45,7 +45,7 @@ impl Shell {
                     let command = &tokens[0];
                     let args = tokens.get(1..).unwrap_or_default();
 
-                    let remainder = args_without_redirect(args).join(" ");
+                    let remainder = parse_args(args).join(" ");
 
                     process_command(
                         self,
@@ -81,5 +81,9 @@ impl Shell {
 
     pub fn get_formatted_completion_command(&self, command_name: &String) -> String {
         self.helper.get_formatted_completion_command(command_name)
+    }
+
+    pub fn get_job_number(&mut self) -> usize {
+        self.helper.next_job_id()
     }
 }

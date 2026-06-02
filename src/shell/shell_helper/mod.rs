@@ -15,6 +15,7 @@ pub struct ShellHepler {
     pub(super) complete_commands: HashMap<String, String>,
     last_prefix: RefCell<Option<String>>,
     tab_count: RefCell<usize>,
+    next_job_number: usize,
 }
 
 impl ShellHepler {
@@ -25,6 +26,7 @@ impl ShellHepler {
             complete_commands: HashMap::new(),
             last_prefix: RefCell::new(None),
             tab_count: RefCell::new(0),
+            next_job_number: 0,
         }
     }
 
@@ -56,6 +58,11 @@ impl ShellHepler {
         }
 
         *self.tab_count.borrow()
+    }
+
+    pub(super) fn next_job_id(&mut self) -> usize {
+        self.next_job_number += 1;
+        self.next_job_number
     }
 }
 

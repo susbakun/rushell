@@ -20,7 +20,7 @@ pub fn process_command(
     } else if command == "jobs" {
         handle_job_command()?;
     } else {
-        handle_executable_command(args, command, &paths)?;
+        handle_executable_command(shell, args, command, &paths)?;
     }
 
     Ok(())
@@ -85,28 +85,46 @@ fn handle_job_command() -> Result<usize> {
     Ok(0)
 }
 
-fn handle_executable_command(args: &[String], command: &str, paths: &Vec<String>) -> Result<usize> {
+fn handle_executable_command(
+    shell: &mut Shell,
+    args: &[String],
+    command: &str,
+    paths: &Vec<String>,
+) -> Result<usize> {
     let (_, found) = find_exe(paths, command)?;
-    let exec_args = args_without_redirect(args);
 
-    if found {
-        let command_output = Command::new(command)
+    let is_background_job = args.contains(&"&".to_string());
+
+    let exec_args = parse_args(args);
+
+    if !found {
+        let output = format!("{command}: not found");
+        return process_output(&output, args, true);
+    }
+
+    if is_background_job {
+        let child = Command::new(command)
             .args(exec_args)
-            .output()
+            .spawn()
             .expect("failed to execute the command");
 
-        let stderr = String::from_utf8_lossy(&command_output.stderr).to_string();
-        if !stderr.is_empty() {
-            process_output(&stderr, args, true)?;
-        }
+        let output = format!("[{}] {}", shell.get_job_number(), child.id());
+        return process_output(&output, args, false);
+    }
 
-        let stdout = String::from_utf8_lossy(&command_output.stdout);
-        if !stdout.is_empty() {
-            process_output(&stdout.to_string(), args, false)?;
-        }
-    } else {
-        let output = format!("{command}: not found");
-        process_output(&output, args, true)?;
+    let command_output = Command::new(command)
+        .args(exec_args)
+        .output()
+        .expect("failed to execute the command");
+
+    let stderr = String::from_utf8_lossy(&command_output.stderr).to_string();
+    if !stderr.is_empty() {
+        process_output(&stderr, args, true)?;
+    }
+
+    let stdout = String::from_utf8_lossy(&command_output.stdout);
+    if !stdout.is_empty() {
+        process_output(&stdout.to_string(), args, false)?;
     }
 
     Ok(0)

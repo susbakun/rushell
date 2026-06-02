@@ -59,7 +59,7 @@ pub fn parse_input(input: &str) -> Vec<String> {
     args
 }
 
-pub fn args_without_redirect(args: &[String]) -> Vec<String> {
+pub fn parse_args(args: &[String]) -> Vec<String> {
     let mut new_args = Vec::new();
     let mut i = 0;
     while i < args.len() {
@@ -67,6 +67,7 @@ pub fn args_without_redirect(args: &[String]) -> Vec<String> {
             || STDERROR_REDIRECT_OPS.contains(&args[i].as_str())
             || STDOUT_APPEND_OPS.contains(&args[i].as_str())
             || STDERROR_APPEND_OPS.contains(&args[i].as_str())
+            || args[i] == "&"
         {
             break;
         }
