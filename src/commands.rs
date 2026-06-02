@@ -82,12 +82,27 @@ fn handle_complete_command(shell: &mut Shell, args: &[String]) -> Result<usize> 
 }
 
 fn handle_job_command(shell: &mut Shell, args: &[String]) -> Result<usize> {
-    let Some(job) = shell.get_jobs().get(0) else {
-        return Ok(0);
-    };
+    let mut output = String::new();
+    let n = shell.get_jobs().len();
 
-    let padd = " ".repeat(17);
-    let output = format!("[1]+ Running{padd}{job}");
+    for (ind, job) in shell.get_jobs().iter().enumerate() {
+        let job_number = ind + 1;
+        let padd = " ".repeat(17);
+        let sign = if ind == n - 1 {
+            // most recent
+            "+"
+        } else if ind == n - 2 {
+            // second most recent
+            "-"
+        } else {
+            // otherwise
+            " "
+        };
+
+        let formatted = format!("{job_number}{} Running{}{}", sign, padd, job);
+        output.push_str(&formatted);
+    }
+
     process_output(&output, args, false)
 }
 
