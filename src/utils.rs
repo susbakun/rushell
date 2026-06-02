@@ -78,6 +78,19 @@ pub fn parse_args(args: &[String]) -> Vec<String> {
     new_args
 }
 
+pub fn get_command_after_pipe(args: &[String]) -> Result<(&String, Vec<&String>)> {
+    let second_part = args
+        .split(|st| st == "|")
+        .nth(1)
+        .ok_or_else(|| anyhow!("couln't find the second part of the pipeline"))?;
+    let mut second_part = second_part.iter();
+
+    let second_command = second_part.next().unwrap();
+    let second_command_args = second_part.collect::<Vec<&String>>();
+
+    Ok((second_command, second_command_args))
+}
+
 pub fn find_exe(paths: &Vec<String>, command: &str) -> Result<(Option<PathBuf>, bool)> {
     let mut found = false;
     for path in paths {
@@ -129,4 +142,8 @@ pub fn find_command_names_on_path(paths: &Vec<String>) -> Result<Vec<String>> {
     }
 
     Ok(commands)
+}
+
+pub fn is_piped(args: &[String]) -> bool {
+    args.contains(&"|".to_string())
 }

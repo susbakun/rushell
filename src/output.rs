@@ -1,6 +1,28 @@
+use std::process::Stdio;
+
 use super::*;
 
 pub fn process_output(output: &String, args: &[String], is_stderror: bool) -> Result<usize> {
+    if is_piped(args) {
+        let (second_command, second_command_args) = get_command_after_pipe(args)?;
+
+        let mut second = Command::new(second_command)
+            .args(second_command_args)
+            .stdin(Stdio::piped())
+            .spawn()?;
+
+        second
+            .stdin
+            .as_mut()
+            .unwrap()
+            .write_all(output.as_bytes())?;
+
+        drop(second.stdin.take());
+
+        second.wait()?;
+        return Ok(0);
+    }
+
     if has_std_redirect(args)
         || has_err_redirect(args)
         || has_std_append(args)
