@@ -1,3 +1,5 @@
+use super::*;
+
 use std::cell::RefCell;
 use std::collections::HashMap;
 
@@ -13,9 +15,9 @@ pub struct ShellHepler {
     pub(super) exe_commands: Vec<String>,
     pub(super) exe_paths: Vec<String>,
     pub(super) complete_commands: HashMap<String, String>,
+    pub(super) jobs: Vec<Job>,
     last_prefix: RefCell<Option<String>>,
     tab_count: RefCell<usize>,
-    pub(super) jobs: Vec<String>,
 }
 
 impl ShellHepler {
@@ -60,7 +62,18 @@ impl ShellHepler {
         *self.tab_count.borrow()
     }
 
-    pub(super) fn add_job(&mut self, job: String) {
+    pub(super) fn get_jobs(&mut self) -> &Vec<Job> {
+        self.jobs.retain(|job| !job.is_job_finished());
+
+        self.jobs.iter_mut().for_each(|job| {
+            job.update_status()
+                .expect("failded to update the job status")
+        });
+
+        &self.jobs
+    }
+
+    pub(super) fn add_job(&mut self, job: Job) {
         self.jobs.push(job);
     }
 

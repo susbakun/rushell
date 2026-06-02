@@ -83,12 +83,12 @@ impl Shell {
         self.helper.get_formatted_completion_command(command_name)
     }
 
-    pub fn add_job(&mut self, job: String) {
+    pub fn add_job(&mut self, job: Job) {
         self.helper.add_job(job);
     }
 
-    pub fn get_jobs(&self) -> &Vec<String> {
-        &self.helper.jobs
+    pub fn get_jobs(&mut self) -> &Vec<Job> {
+        &self.helper.get_jobs()
     }
 
     pub fn get_job_number(&mut self) -> usize {

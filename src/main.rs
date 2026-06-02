@@ -24,6 +24,8 @@ mod output;
 use output::*;
 mod shell;
 use shell::*;
+mod job;
+use job::*;
 
 use anyhow::{Result, anyhow};
 

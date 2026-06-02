@@ -99,7 +99,13 @@ fn handle_job_command(shell: &mut Shell, args: &[String]) -> Result<usize> {
             " "
         };
 
-        let formatted = format!("[{job_number}]{}  Running{}{}\n", sign, padd, job);
+        let job_command = job.get_job_command();
+        let job_status_str = job.get_job_status();
+
+        let formatted = format!(
+            "[{job_number}]{sign}  {}{padd}{job_command}\n",
+            job_status_str
+        );
         output.push_str(&formatted);
     }
 
@@ -131,10 +137,13 @@ fn handle_executable_command(
 
         let joined_args = args.join(" ");
         let job_command = format!("{command} {joined_args}");
+        let job_id = child.id();
 
-        shell.add_job(job_command);
+        let job = Job::new(job_command, child);
 
-        let output = format!("[{}] {}", shell.get_job_number(), child.id());
+        shell.add_job(job);
+
+        let output = format!("[{}] {}", shell.get_job_number(), job_id);
         return process_output(&output, args, false);
     }
 
