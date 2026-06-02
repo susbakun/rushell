@@ -18,7 +18,7 @@ pub fn process_command(
     } else if command == "complete" {
         handle_complete_command(shell, args)?;
     } else if command == "jobs" {
-        handle_job_command(shell, args)?;
+        handle_jobs_command(shell, args, false)?;
     } else {
         handle_executable_command(shell, args, command, &paths)?;
     }
@@ -81,7 +81,7 @@ fn handle_complete_command(shell: &mut Shell, args: &[String]) -> Result<usize> 
     process_output(&output, args, true)
 }
 
-fn handle_job_command(shell: &mut Shell, args: &[String]) -> Result<usize> {
+pub fn handle_jobs_command(shell: &mut Shell, args: &[String], only_done: bool) -> Result<usize> {
     shell.refresh_jobs();
 
     let mut output = String::new();
@@ -89,6 +89,10 @@ fn handle_job_command(shell: &mut Shell, args: &[String]) -> Result<usize> {
     let n = jobs.len();
 
     for (ind, job) in jobs.iter().enumerate() {
+        if !job.is_job_finished() && only_done {
+            return Ok(0);
+        }
+
         let padd = " ".repeat(17);
         let sign = if ind == n - 1 {
             "+"

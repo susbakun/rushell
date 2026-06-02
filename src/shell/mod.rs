@@ -30,6 +30,9 @@ impl Shell {
         rl.set_helper(Some(self.helper.clone()));
 
         loop {
+            // reap before the next prompt
+            handle_jobs_command(self, &[], true)?;
+
             let readline = rl.readline("$ ");
 
             match readline {
