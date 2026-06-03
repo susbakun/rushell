@@ -1,11 +1,11 @@
 use super::*;
 
 mod shell_helper;
-use shell_helper::*;
+pub use shell_helper::*;
 
 pub struct Shell {
     helper: ShellHepler,
-    pub rl: Editor<ShellHepler, DefaultHistory>,
+    pub rl: RLType,
 }
 
 impl Shell {
@@ -25,11 +25,11 @@ impl Shell {
         Ok(Self { helper, rl })
     }
 
-    fn setup_rl(helper: &ShellHepler) -> Result<Editor<ShellHepler, DefaultHistory>> {
+    fn setup_rl(helper: &ShellHepler) -> Result<RLType> {
         let config = Config::builder()
             .completion_type(CompletionType::List)
             .build();
-        let mut rl = Editor::<ShellHepler, DefaultHistory>::with_config(config)?;
+        let mut rl = RLType::with_config(config)?;
         rl.set_helper(Some(helper.clone()));
 
         Ok(rl)

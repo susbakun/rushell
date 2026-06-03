@@ -1,19 +1,26 @@
 use super::*;
 
-pub fn handle_history_command(shell: &Shell, args: &[String]) -> Result<usize> {
-    let history = shell.history();
-    let segmented_args = segment_args(args);
+pub fn handle_history_command(shell: &mut Shell, args: &[String]) -> Result<usize> {
+    let mut segmented_args_iter = segment_args(args).into_iter();
 
+    let first_arg = segmented_args_iter.next();
+    let mut n = None;
+
+    if let Some(arg) = first_arg {
+        if arg == "-r" {
+            let path = segmented_args_iter
+                .next()
+                .ok_or_else(|| anyhow!("path is not specified"))?;
+
+            shell.rl.load_history(&path)?;
+        } else {
+            n = Some(arg.parse()?);
+        }
+    }
+    let history = shell.history();
     let history_len = history.len();
 
-    let n_str = segmented_args.get(0).map(String::from).unwrap_or_default();
-    let mut n: usize = history_len;
-
-    if !n_str.is_empty() {
-        n = n_str.parse()?;
-    }
-
-    let skip = history_len - n;
+    let skip = history_len - n.unwrap_or(history_len);
     let history_iter = history.iter().skip(skip);
 
     let mut output = String::new();
