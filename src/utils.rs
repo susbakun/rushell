@@ -59,10 +59,6 @@ pub fn parse_input(input: &str) -> Vec<String> {
     args
 }
 
-pub fn parse_args(args: &[String]) -> Vec<String> {
-    segment_args(args)
-}
-
 pub fn segment_args(args: &[String]) -> Vec<String> {
     let mut new_args = Vec::new();
     for arg in args {
