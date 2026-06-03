@@ -73,16 +73,3 @@ pub fn handle_history_command(shell: &mut Shell, args: &[String]) -> Result<usiz
 
     process_output(&output, args, false)
 }
-
-/*
-[tester::#SX3] [/tmp/strawberry.txt] echo grape pineapple
-[tester::#SX3] [/tmp/strawberry.txt] echo pineapple mango raspberry
-[tester::#SX3] [/tmp/strawberry.txt] echo raspberry strawberry pineapple
-
-$ echo raspberry strawberry
-$ echo strawberry pear
-$ echo apple strawberry
-$ history -a /tmp/strawberry.txt
-$ echo grape pineapple mango
-$ history -a /tmp/strawberry.txt
- */

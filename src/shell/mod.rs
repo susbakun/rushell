@@ -16,11 +16,17 @@ impl Shell {
             .map(|path| path.to_string())
             .collect::<Vec<String>>();
 
+        let hists = std::env::var("HISTFILE");
+
         let exe_commands = find_command_names_on_path(&paths)?;
 
         let helper = ShellHepler::new(exe_commands, paths);
 
-        let rl = Self::setup_rl(&helper)?;
+        let mut rl = Self::setup_rl(&helper)?;
+
+        if let Ok(hists) = hists {
+            rl.load_history(&hists)?;
+        }
 
         Ok(Self { helper, rl })
     }
