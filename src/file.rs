@@ -1,6 +1,15 @@
 use super::*;
 use std::fs::{File, OpenOptions};
 
+pub fn open_file(path: &String, append: bool) -> Result<File> {
+    let file = OpenOptions::new()
+        .create(true)
+        .append(append)
+        .write(!append)
+        .open(path)?;
+    Ok(file)
+}
+
 pub fn write_to_file(output: &String, mut file: File) -> Result<usize> {
     Ok(file.write(output.as_bytes())?)
 }

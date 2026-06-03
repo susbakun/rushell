@@ -30,10 +30,26 @@ pub fn handle_history_command(shell: &mut Shell, args: &[String]) -> Result<usiz
 
             output.push('\n');
 
-            let file = OpenOptions::new().create(true).write(true).open(path)?;
+            let file = open_file(&path, false)?;
 
             write_to_file(&output, file)?;
             return Ok(0);
+        } else if arg == "-a" {
+            let path = segmented_args_iter
+                .next()
+                .ok_or_else(|| anyhow!("path is not specified"))?;
+
+            let mut output = shell
+                .history()
+                .iter()
+                .map(|history| history.to_string())
+                .collect::<Vec<String>>()
+                .join("\n");
+
+            output.push('\n');
+
+            let file = open_file(&path, true)?;
+            write_to_file(&output, file)?;
         } else {
             n = Some(arg.parse()?);
         }
