@@ -13,6 +13,7 @@ pub fn handle_history_command(shell: &mut Shell, args: &[String]) -> Result<usiz
                 .ok_or_else(|| anyhow!("path is not specified"))?;
 
             shell.rl.load_history(&path)?;
+            return Ok(0);
         } else {
             n = Some(arg.parse()?);
         }
