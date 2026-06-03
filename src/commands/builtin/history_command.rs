@@ -50,6 +50,7 @@ pub fn handle_history_command(shell: &mut Shell, args: &[String]) -> Result<usiz
 
             let file = open_file(&path, true)?;
             write_to_file(&output, file)?;
+            shell.rl.clear_history()?;
             return Ok(0);
         } else {
             n = Some(arg.parse()?);
@@ -72,3 +73,16 @@ pub fn handle_history_command(shell: &mut Shell, args: &[String]) -> Result<usiz
 
     process_output(&output, args, false)
 }
+
+/*
+[tester::#SX3] [/tmp/strawberry.txt] echo grape pineapple
+[tester::#SX3] [/tmp/strawberry.txt] echo pineapple mango raspberry
+[tester::#SX3] [/tmp/strawberry.txt] echo raspberry strawberry pineapple
+
+$ echo raspberry strawberry
+$ echo strawberry pear
+$ echo apple strawberry
+$ history -a /tmp/strawberry.txt
+$ echo grape pineapple mango
+$ history -a /tmp/strawberry.txt
+ */
