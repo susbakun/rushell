@@ -12,6 +12,16 @@ A minimal POSIX-style shell built in Rust, built as part of the [Codecrafters "B
   * `type`
   * `complete`
   * `jobs`
+  * `history`
+* **Command history**
+
+  * In-memory history for every non-empty line entered at the prompt
+  * `history` prints numbered entries (bash-style: `\tN  command`)
+  * `history N` prints the last *N* entries
+  * `history -w <file>` writes the full history to a file (plain text, one command per line — not rustyline’s `#V2` format)
+  * `history -a <file>` appends the in-memory history to a file, then clears it
+  * `history -r <file>` reloads history from a file into the current session
+  * If `HISTFILE` is set at startup, that file is loaded into the session; `exit` attempts to write the session history back to `HISTFILE` (no-op if unset)
 * Resolve executables using `PATH`
 * Execute external programs
 * Quoted arguments support
@@ -48,7 +58,7 @@ A minimal POSIX-style shell built in Rust, built as part of the [Codecrafters "B
 
   * **Command names** (first word)
 
-    * Builtins: `echo`, `exit`, `type`, `complete`, `jobs`
+    * Builtins: `echo`, `exit`, `type`, `complete`, `jobs`, `history`
     * Executables discovered on `PATH` at startup
     * First **Tab**: beep if multiple matches; extend to the longest common prefix when possible
     * Second **Tab**: list all matching commands (bash-style)
@@ -76,6 +86,40 @@ hello world
 
 $ type echo
 echo is a shell builtin
+
+$ type history
+history is a shell builtin
+```
+
+### History
+
+```sh
+$ echo one
+one
+$ echo two
+two
+
+$ history
+	1  echo one
+	2  echo two
+
+$ history 1
+	2  echo two
+
+$ history -w /tmp/my-history.txt
+$ cat /tmp/my-history.txt
+echo one
+echo two
+
+$ history -a /tmp/my-history.txt   # append then clear in-memory history
+$ history -r /tmp/my-history.txt   # load from file
+```
+
+With `HISTFILE` set before launching the shell, history is restored on startup and saved on `exit`:
+
+```sh
+$ export HISTFILE=~/.rushell_history
+$ ./your_program.sh
 ```
 
 ### Executables
@@ -245,7 +289,7 @@ cargo run
 src/
 ├── main.rs                         # entry point
 ├── shell/
-│   ├── mod.rs                      # REPL loop, shell state, job reaping before prompt
+│   ├── mod.rs                      # REPL loop, history, job reaping before prompt
 │   └── shell_helper/
 │       ├── mod.rs                  # rustyline helper, job list, completion registry
 │       └── completion.rs           # command, path, and -C completer logic
@@ -258,7 +302,9 @@ src/
 │       ├── exit_command.rs
 │       ├── type_command.rs
 │       ├── complete_command.rs
-│       └── jobs_command.rs
+│       ├── jobs_command.rs
+│       └── history_command.rs
+├── types.rs                        # rustyline Editor type alias
 ├── job.rs                          # job status tracking (Running / Done)
 ├── output.rs                       # stdout/stderr output and redirection
 ├── utils.rs                        # parsing, PATH lookup, pipeline splitting
@@ -282,6 +328,7 @@ This project is intentionally minimal and focuses on learning how shells work in
 * PATH resolution
 * shell builtin behavior
 * readline-style editing and tab completion (commands, paths, directories, and external completer scripts)
+* command history (listing, file persistence, `HISTFILE`)
 
 Some advanced shell features (subshells, globbing, `&&`/`||` chains, etc.) may still be work in progress depending on the current challenge stage. ([docs.codecrafters.io][1])
 
