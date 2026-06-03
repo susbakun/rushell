@@ -21,12 +21,14 @@ pub fn handle_history_command(shell: &mut Shell, args: &[String]) -> Result<usiz
                 .next()
                 .ok_or_else(|| anyhow!("path is not specified"))?;
 
-            let output = shell
+            let mut output = shell
                 .history()
                 .iter()
                 .map(|history| history.to_string())
                 .collect::<Vec<String>>()
                 .join("\n");
+
+            output.push('\n');
 
             let file = OpenOptions::new().create(true).write(true).open(path)?;
 
