@@ -16,17 +16,23 @@ pub struct ShellHepler {
     pub(super) exe_paths: Vec<String>,
     pub(super) complete_commands: HashMap<String, String>,
     pub(super) jobs: Vec<Job>,
+    pub(super) hist_path: Option<String>,
     last_prefix: RefCell<Option<String>>,
     tab_count: RefCell<usize>,
 }
 
 impl ShellHepler {
-    pub fn new(exe_commands: Vec<String>, exe_paths: Vec<String>) -> Self {
+    pub fn new(
+        exe_commands: Vec<String>,
+        exe_paths: Vec<String>,
+        hist_path: &Option<String>,
+    ) -> Self {
         Self {
             exe_commands,
             exe_paths,
             complete_commands: HashMap::new(),
             jobs: vec![],
+            hist_path: hist_path.clone(),
             last_prefix: RefCell::new(None),
             tab_count: RefCell::new(0),
         }

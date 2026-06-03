@@ -6,7 +6,6 @@ pub use shell_helper::*;
 pub struct Shell {
     helper: ShellHepler,
     pub rl: RLType,
-    hist_path: Option<String>,
 }
 
 impl Shell {
@@ -20,7 +19,7 @@ impl Shell {
         let hist_path = std::env::var("HISTFILE").ok();
 
         let exe_commands = find_command_names_on_path(&paths)?;
-        let helper = ShellHepler::new(exe_commands, paths);
+        let helper = ShellHepler::new(exe_commands, paths, &hist_path);
 
         let mut rl = Self::setup_rl(&helper)?;
 
@@ -28,11 +27,7 @@ impl Shell {
             rl.load_history(&hist_path)?;
         }
 
-        Ok(Self {
-            helper,
-            rl,
-            hist_path,
-        })
+        Ok(Self { helper, rl })
     }
 
     fn setup_rl(helper: &ShellHepler) -> Result<RLType> {
@@ -136,7 +131,7 @@ impl Shell {
     pub fn write_history_to_file(&mut self, path: Option<&String>, append: bool) -> Result<()> {
         let path = if let Some(path) = path {
             path
-        } else if let Some(path) = &self.hist_path {
+        } else if let Some(path) = &self.helper.hist_path {
             path
         } else {
             return Err(anyhow!("no path is provided"));
