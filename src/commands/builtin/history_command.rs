@@ -50,6 +50,7 @@ pub fn handle_history_command(shell: &mut Shell, args: &[String]) -> Result<usiz
 
             let file = open_file(&path, true)?;
             write_to_file(&output, file)?;
+            return Ok(0);
         } else {
             n = Some(arg.parse()?);
         }
