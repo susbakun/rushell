@@ -42,7 +42,6 @@ pub fn handle_history_command(shell: &mut Shell, args: &[String]) -> Result<usiz
             let mut output = shell
                 .history()
                 .iter()
-                .rev()
                 .map(|history| history.to_string())
                 .collect::<Vec<String>>()
                 .join("\n");
