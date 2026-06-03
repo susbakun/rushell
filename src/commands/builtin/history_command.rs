@@ -14,6 +14,13 @@ pub fn handle_history_command(shell: &mut Shell, args: &[String]) -> Result<usiz
 
             shell.rl.load_history(&path)?;
             return Ok(0);
+        } else if arg == "-w" {
+            let path = segmented_args_iter
+                .next()
+                .ok_or_else(|| anyhow!("path is not specified"))?;
+
+            shell.rl.save_history(&path)?;
+            return Ok(0);
         } else {
             n = Some(arg.parse()?);
         }
