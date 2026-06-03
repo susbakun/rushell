@@ -5,6 +5,7 @@ use shell_helper::*;
 
 pub struct Shell {
     helper: ShellHepler,
+    pub rl: Editor<ShellHepler, DefaultHistory>,
 }
 
 impl Shell {
@@ -19,21 +20,27 @@ impl Shell {
 
         let helper = ShellHepler::new(exe_commands, paths);
 
-        Ok(Self { helper })
+        let rl = Self::setup_rl(&helper)?;
+
+        Ok(Self { helper, rl })
     }
 
-    pub fn run(&mut self) -> Result<()> {
+    fn setup_rl(helper: &ShellHepler) -> Result<Editor<ShellHepler, DefaultHistory>> {
         let config = Config::builder()
             .completion_type(CompletionType::List)
             .build();
         let mut rl = Editor::<ShellHepler, DefaultHistory>::with_config(config)?;
-        rl.set_helper(Some(self.helper.clone()));
+        rl.set_helper(Some(helper.clone()));
 
+        Ok(rl)
+    }
+
+    pub fn run(&mut self) -> Result<()> {
         loop {
             // reap before the next prompt
             handle_jobs_command(self, &[], true)?;
 
-            let readline = rl.readline("$ ");
+            let readline = self.rl.readline("$ ");
 
             match readline {
                 Ok(line) => {
@@ -45,7 +52,8 @@ impl Shell {
                     if tokens.is_empty() {
                         continue;
                     }
-                    self.add_command_to_history(&line);
+
+                    self.add_command_to_history(&line)?;
 
                     let command = &tokens[0];
                     let args = tokens.get(1..).unwrap_or_default();
@@ -54,7 +62,7 @@ impl Shell {
 
                     process_command(self, command, &remainder, args, &tokens)?;
 
-                    if let Some(helper) = rl.helper_mut() {
+                    if let Some(helper) = self.rl.helper_mut() {
                         *helper = self.helper.clone();
                     }
                 }
@@ -106,11 +114,12 @@ impl Shell {
         self.helper.next_job_number()
     }
 
-    pub fn history(&self) -> &Vec<String> {
-        &self.helper.history
+    pub fn history(&self) -> Vec<&String> {
+        self.rl.history().iter().collect()
     }
 
-    fn add_command_to_history(&mut self, command: &String) {
-        self.helper.add_command_to_history(command)
+    fn add_command_to_history(&mut self, line: &String) -> Result<()> {
+        self.rl.add_history_entry(line)?;
+        Ok(())
     }
 }
