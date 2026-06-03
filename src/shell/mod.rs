@@ -1,10 +1,11 @@
 use super::*;
 
 mod shell_helper;
-use shell_helper::*;
+pub use shell_helper::*;
 
 pub struct Shell {
     helper: ShellHepler,
+    pub rl: RLType,
 }
 
 impl Shell {
@@ -15,25 +16,36 @@ impl Shell {
             .map(|path| path.to_string())
             .collect::<Vec<String>>();
 
+        let hist_path = std::env::var("HISTFILE").ok();
+
         let exe_commands = find_command_names_on_path(&paths)?;
+        let helper = ShellHepler::new(exe_commands, paths, &hist_path);
 
-        let helper = ShellHepler::new(exe_commands, paths);
+        let mut rl = Self::setup_rl(&helper)?;
 
-        Ok(Self { helper })
+        if let Some(hist_path) = &hist_path {
+            rl.load_history(&hist_path)?;
+        }
+
+        Ok(Self { helper, rl })
     }
 
-    pub fn run(&mut self) -> Result<()> {
+    fn setup_rl(helper: &ShellHepler) -> Result<RLType> {
         let config = Config::builder()
             .completion_type(CompletionType::List)
             .build();
-        let mut rl = Editor::<ShellHepler, DefaultHistory>::with_config(config)?;
-        rl.set_helper(Some(self.helper.clone()));
+        let mut rl = RLType::with_config(config)?;
+        rl.set_helper(Some(helper.clone()));
 
+        Ok(rl)
+    }
+
+    pub fn run(&mut self) -> Result<()> {
         loop {
             // reap before the next prompt
             handle_jobs_command(self, &[], true)?;
 
-            let readline = rl.readline("$ ");
+            let readline = self.rl.readline("$ ");
 
             match readline {
                 Ok(line) => {
@@ -45,14 +57,17 @@ impl Shell {
                     if tokens.is_empty() {
                         continue;
                     }
+
+                    self.add_command_to_history(&line)?;
+
                     let command = &tokens[0];
                     let args = tokens.get(1..).unwrap_or_default();
 
-                    let remainder = parse_args(args).join(" ");
+                    let remainder = segment_args(args).join(" ");
 
                     process_command(self, command, &remainder, args, &tokens)?;
 
-                    if let Some(helper) = rl.helper_mut() {
+                    if let Some(helper) = self.rl.helper_mut() {
                         *helper = self.helper.clone();
                     }
                 }
@@ -102,5 +117,44 @@ impl Shell {
 
     pub fn next_job_number(&mut self) -> usize {
         self.helper.next_job_number()
+    }
+
+    pub fn history(&self) -> Vec<&String> {
+        self.rl.history().iter().collect()
+    }
+
+    fn add_command_to_history(&mut self, line: &String) -> Result<()> {
+        self.rl.add_history_entry(line)?;
+        Ok(())
+    }
+
+    pub fn write_history_to_file(&mut self, path: Option<&String>, append: bool) -> Result<()> {
+        let path = if let Some(path) = path {
+            path
+        } else if let Some(path) = &self.helper.hist_path {
+            path
+        } else {
+            return Err(anyhow!("no path is provided"));
+        };
+
+        let mut output = self
+            .history()
+            .iter()
+            .map(|history| history.to_string())
+            .collect::<Vec<String>>()
+            .join("\n");
+
+        output.push('\n');
+
+        let file = open_file(&path, append)?;
+
+        write_to_file(&output, file)?;
+
+        // clearing history on append mode
+        if append {
+            self.rl.clear_history()?;
+        }
+
+        Ok(())
     }
 }

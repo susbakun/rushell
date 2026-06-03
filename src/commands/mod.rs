@@ -21,7 +21,7 @@ pub fn process_command(
     }
 
     if command == "exit" {
-        handle_exit_command();
+        handle_exit_command(shell)?;
     } else if command == "echo" {
         handle_echo_command(remainder, args)?;
     } else if command == "type" {
@@ -30,6 +30,8 @@ pub fn process_command(
         handle_complete_command(shell, args)?;
     } else if command == "jobs" {
         handle_jobs_command(shell, args, false)?;
+    } else if command == "history" {
+        handle_history_command(shell, args)?;
     } else {
         handle_executable_command(shell, args, command)?;
     }

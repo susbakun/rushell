@@ -10,3 +10,5 @@ mod jobs_command;
 pub use jobs_command::*;
 mod type_command;
 pub use type_command::*;
+mod history_command;
+pub use history_command::*;

@@ -9,8 +9,8 @@ use std::{
 use is_executable::IsExecutable;
 
 use rustyline::error::ReadlineError::Interrupted;
-use rustyline::history::DefaultHistory;
-use rustyline::{CompletionType, Config, Editor};
+
+use rustyline::{CompletionType, Config};
 
 mod commands;
 use commands::*;
@@ -26,6 +26,8 @@ mod shell;
 use shell::*;
 mod job;
 use job::*;
+mod types;
+use types::*;
 
 use anyhow::{Result, anyhow};
 
