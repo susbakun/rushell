@@ -21,7 +21,7 @@ pub fn process_command(
     }
 
     if command == "exit" {
-        handle_exit_command();
+        handle_exit_command(shell)?;
     } else if command == "echo" {
         handle_echo_command(remainder, args)?;
     } else if command == "type" {

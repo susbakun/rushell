@@ -1,5 +1,3 @@
-use std::fs::{File, OpenOptions};
-
 use super::*;
 
 pub fn handle_history_command(shell: &mut Shell, args: &[String]) -> Result<usize> {
@@ -21,36 +19,14 @@ pub fn handle_history_command(shell: &mut Shell, args: &[String]) -> Result<usiz
                 .next()
                 .ok_or_else(|| anyhow!("path is not specified"))?;
 
-            let mut output = shell
-                .history()
-                .iter()
-                .map(|history| history.to_string())
-                .collect::<Vec<String>>()
-                .join("\n");
-
-            output.push('\n');
-
-            let file = open_file(&path, false)?;
-
-            write_to_file(&output, file)?;
+            shell.write_history_to_file(Some(&path), false)?;
             return Ok(0);
         } else if arg == "-a" {
             let path = segmented_args_iter
                 .next()
                 .ok_or_else(|| anyhow!("path is not specified"))?;
 
-            let mut output = shell
-                .history()
-                .iter()
-                .map(|history| history.to_string())
-                .collect::<Vec<String>>()
-                .join("\n");
-
-            output.push('\n');
-
-            let file = open_file(&path, true)?;
-            write_to_file(&output, file)?;
-            shell.rl.clear_history()?;
+            shell.write_history_to_file(Some(&path), true)?;
             return Ok(0);
         } else {
             n = Some(arg.parse()?);

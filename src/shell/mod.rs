@@ -6,6 +6,7 @@ pub use shell_helper::*;
 pub struct Shell {
     helper: ShellHepler,
     pub rl: RLType,
+    hist_path: Option<String>,
 }
 
 impl Shell {
@@ -16,19 +17,22 @@ impl Shell {
             .map(|path| path.to_string())
             .collect::<Vec<String>>();
 
-        let hists = std::env::var("HISTFILE");
+        let hist_path = std::env::var("HISTFILE").ok();
 
         let exe_commands = find_command_names_on_path(&paths)?;
-
         let helper = ShellHepler::new(exe_commands, paths);
 
         let mut rl = Self::setup_rl(&helper)?;
 
-        if let Ok(hists) = hists {
-            rl.load_history(&hists)?;
+        if let Some(hist_path) = &hist_path {
+            rl.load_history(&hist_path)?;
         }
 
-        Ok(Self { helper, rl })
+        Ok(Self {
+            helper,
+            rl,
+            hist_path,
+        })
     }
 
     fn setup_rl(helper: &ShellHepler) -> Result<RLType> {
@@ -126,6 +130,36 @@ impl Shell {
 
     fn add_command_to_history(&mut self, line: &String) -> Result<()> {
         self.rl.add_history_entry(line)?;
+        Ok(())
+    }
+
+    pub fn write_history_to_file(&mut self, path: Option<&String>, append: bool) -> Result<()> {
+        let path = if let Some(path) = path {
+            path
+        } else if let Some(path) = &self.hist_path {
+            path
+        } else {
+            return Err(anyhow!("no path is provided"));
+        };
+
+        let mut output = self
+            .history()
+            .iter()
+            .map(|history| history.to_string())
+            .collect::<Vec<String>>()
+            .join("\n");
+
+        output.push('\n');
+
+        let file = open_file(&path, append)?;
+
+        write_to_file(&output, file)?;
+
+        // clearing history on append mode
+        if append {
+            self.rl.clear_history()?;
+        }
+
         Ok(())
     }
 }
