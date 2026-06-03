@@ -1,3 +1,5 @@
+use std::fs::{File, OpenOptions};
+
 use super::*;
 
 pub fn handle_history_command(shell: &mut Shell, args: &[String]) -> Result<usize> {
@@ -19,7 +21,16 @@ pub fn handle_history_command(shell: &mut Shell, args: &[String]) -> Result<usiz
                 .next()
                 .ok_or_else(|| anyhow!("path is not specified"))?;
 
-            shell.rl.save_history(&path)?;
+            let output = shell
+                .history()
+                .iter()
+                .map(|history| history.to_string())
+                .collect::<Vec<String>>()
+                .join("\n");
+
+            let file = OpenOptions::new().create(true).write(true).open(path)?;
+
+            write_to_file(&output, file)?;
             return Ok(0);
         } else {
             n = Some(arg.parse()?);
