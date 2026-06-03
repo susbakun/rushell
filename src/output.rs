@@ -44,6 +44,6 @@ pub fn has_err_append(args: &[String]) -> bool {
         .any(|arg| STDERROR_APPEND_OPS.contains(&arg.as_str()))
 }
 
-// pub fn should_truncate_file(args: &[String]) -> bool {
-//     has_std_redirect(args) || has_err_redirect(args)
-// }
+pub fn should_truncate_file(args: &[String]) -> bool {
+    has_std_redirect(args) || has_err_redirect(args)
+}
