@@ -21,7 +21,7 @@ pub fn handle_declare_command(shell: &mut Shell, args: &[String]) -> Result<usiz
         let (var, value) = (items[0], items[1]);
 
         if var.starts_with(&['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) {
-            output = format!("declare `{var}={value}': not a valid identifier");
+            output = format!("declare: `{var}={value}': not a valid identifier");
             return process_output(&output, args, true);
         }
 
