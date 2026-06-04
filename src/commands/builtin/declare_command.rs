@@ -4,7 +4,7 @@ pub fn handle_declare_command(shell: &mut Shell, args: &[String]) -> Result<usiz
     let segmented_args = segment_args(args);
     let mut output = String::new();
 
-    if args[0] == "-p" {
+    if segmented_args[0] == "-p" {
         let variable = &segmented_args[1];
         let formatted;
 
@@ -15,9 +15,10 @@ pub fn handle_declare_command(shell: &mut Shell, args: &[String]) -> Result<usiz
         }
 
         output.push_str(&formatted);
-    } else if args[1] == "=" {
-        let var = &args[0];
-        let value = &args[2];
+    } else if segmented_args[0].contains("=") {
+        let items = segmented_args[0].split("=").collect::<Vec<&str>>();
+
+        let (var, value) = (items[0], items[1]);
 
         shell.add_variable(var, value);
 

@@ -93,7 +93,7 @@ impl ShellHepler {
         self.jobs.len() + 1
     }
 
-    pub(super) fn get_variable(&self, key: &String) -> Option<&String> {
+    pub(super) fn get_variable(&self, key: &str) -> Option<&String> {
         if let Some(value) = self.variables.get(key) {
             return Some(value);
         }
@@ -101,7 +101,7 @@ impl ShellHepler {
         None
     }
 
-    pub(super) fn add_variable(&mut self, key: &String, value: &String) {
+    pub(super) fn add_variable(&mut self, key: &str, value: &str) {
         let key = key.to_string();
         let value = value.to_string();
 
