@@ -33,7 +33,7 @@ pub fn process_command(
     } else if command == "history" {
         handle_history_command(shell, args)?;
     } else if command == "declare" {
-        handle_declare_command(args)?;
+        handle_declare_command(shell, args)?;
     } else {
         handle_executable_command(shell, args, command)?;
     }

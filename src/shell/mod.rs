@@ -158,4 +158,12 @@ impl Shell {
 
         Ok(())
     }
+
+    pub fn get_variable(&self, key: &String) -> Option<&String> {
+        self.helper.get_variable(key)
+    }
+
+    pub fn add_variable(&mut self, key: &String, value: &String) {
+        self.helper.add_variable(key, value);
+    }
 }

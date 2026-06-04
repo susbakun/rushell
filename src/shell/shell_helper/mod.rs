@@ -17,6 +17,7 @@ pub struct ShellHepler {
     pub(super) complete_commands: HashMap<String, String>,
     pub(super) jobs: Vec<Job>,
     pub(super) hist_path: Option<String>,
+    pub(super) variables: HashMap<String, String>,
     last_prefix: RefCell<Option<String>>,
     tab_count: RefCell<usize>,
 }
@@ -33,6 +34,7 @@ impl ShellHepler {
             complete_commands: HashMap::new(),
             jobs: vec![],
             hist_path: hist_path.clone(),
+            variables: HashMap::new(),
             last_prefix: RefCell::new(None),
             tab_count: RefCell::new(0),
         }
@@ -89,6 +91,21 @@ impl ShellHepler {
 
     pub(super) fn next_job_number(&mut self) -> usize {
         self.jobs.len() + 1
+    }
+
+    pub(super) fn get_variable(&self, key: &String) -> Option<&String> {
+        if let Some(value) = self.variables.get(key) {
+            return Some(value);
+        }
+
+        None
+    }
+
+    pub(super) fn add_variable(&mut self, key: &String, value: &String) {
+        let key = key.to_string();
+        let value = value.to_string();
+
+        self.variables.insert(key, value);
     }
 }
 
