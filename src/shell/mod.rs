@@ -33,6 +33,7 @@ impl Shell {
     fn setup_rl(helper: &ShellHepler) -> Result<RLType> {
         let config = Config::builder()
             .completion_type(CompletionType::List)
+            .history_ignore_space(false)
             .build();
         let mut rl = RLType::with_config(config)?;
         rl.set_helper(Some(helper.clone()));
