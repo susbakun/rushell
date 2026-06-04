@@ -1,3 +1,5 @@
+use std::vec::IntoIter;
+
 use super::*;
 
 pub fn handle_history_command(shell: &mut Shell, args: &[String]) -> Result<usize> {
@@ -8,23 +10,17 @@ pub fn handle_history_command(shell: &mut Shell, args: &[String]) -> Result<usiz
 
     if let Some(arg) = first_arg {
         if arg == "-r" {
-            let path = segmented_args_iter
-                .next()
-                .ok_or_else(|| anyhow!("path is not specified"))?;
+            let path = find_path(&mut segmented_args_iter)?;
 
             shell.rl.load_history(&path)?;
             return Ok(0);
         } else if arg == "-w" {
-            let path = segmented_args_iter
-                .next()
-                .ok_or_else(|| anyhow!("path is not specified"))?;
+            let path = find_path(&mut segmented_args_iter)?;
 
             shell.write_history_to_file(Some(&path), false)?;
             return Ok(0);
         } else if arg == "-a" {
-            let path = segmented_args_iter
-                .next()
-                .ok_or_else(|| anyhow!("path is not specified"))?;
+            let path = find_path(&mut segmented_args_iter)?;
 
             shell.write_history_to_file(Some(&path), true)?;
             return Ok(0);
@@ -48,4 +44,10 @@ pub fn handle_history_command(shell: &mut Shell, args: &[String]) -> Result<usiz
     }
 
     process_output(&output, args, false)
+}
+
+fn find_path(segmented_args_iter: &mut IntoIter<String>) -> Result<String> {
+    segmented_args_iter
+        .next()
+        .ok_or_else(|| anyhow!("path is not specified"))
 }

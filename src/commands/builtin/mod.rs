@@ -12,3 +12,5 @@ mod type_command;
 pub use type_command::*;
 mod history_command;
 pub use history_command::*;
+mod declare_command;
+pub use declare_command::*;

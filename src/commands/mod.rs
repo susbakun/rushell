@@ -32,6 +32,8 @@ pub fn process_command(
         handle_jobs_command(shell, args, false)?;
     } else if command == "history" {
         handle_history_command(shell, args)?;
+    } else if command == "declare" {
+        handle_declare_command(args)?;
     } else {
         handle_executable_command(shell, args, command)?;
     }
