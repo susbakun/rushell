@@ -22,7 +22,7 @@ pub fn handle_declare_command(shell: &mut Shell, args: &[String]) -> Result<usiz
 
         let (var, value) = (items[0], items[1]);
 
-        let re = Regex::new(r"^[A-Za-z_](A-Za-z_)*$").unwrap();
+        let re = Regex::new(r"^[A-Za-z_][A-Za-z_]*$").unwrap();
 
         if !re.is_match(var) {
             output = format!("declare: `{var}={value}': not a valid identifier");
