@@ -36,6 +36,8 @@ pub fn process_command(
         handle_declare_command(shell, args)?;
     } else if command == "pwd" {
         handle_pwd_command(args)?;
+    } else if command == "cd" {
+        handle_cd_command(shell, args)?;
     } else {
         handle_executable_command(shell, args, command)?;
     }

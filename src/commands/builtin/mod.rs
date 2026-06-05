@@ -16,3 +16,5 @@ mod declare_command;
 pub use declare_command::*;
 mod pwd_command;
 pub use pwd_command::*;
+mod cd_command;
+pub use cd_command::*;
