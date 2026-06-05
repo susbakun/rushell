@@ -1,16 +1,10 @@
 use super::*;
 
 pub fn process_output(output: &String, args: &[String], is_stderror: bool) -> Result<usize> {
-    if has_std_redirect(args)
-        || has_err_redirect(args)
-        || has_std_append(args)
-        || has_err_append(args)
-    {
-        let file = find_file(args, false)?;
-        if should_redirect(args, is_stderror) {
-            write_to_file(output, file)?;
-            return Ok(0);
-        }
+    if should_redirect(args, is_stderror) {
+        let truncate = should_truncate_file(args);
+        let file = find_file(args, truncate)?;
+        return write_to_file(output, file);
     }
     if !output.is_empty() {
         print!("{output}");
