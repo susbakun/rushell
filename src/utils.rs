@@ -61,7 +61,7 @@ pub fn parse_input(input: &str) -> Vec<String> {
 
 pub fn segment_args(shell: &Shell, args: &[String]) -> Vec<String> {
     let mut new_args = Vec::new();
-    for mut arg in args {
+    for arg in args {
         if STDOUT_REDIRECT_OPS.contains(&arg.as_str())
             || STDERROR_REDIRECT_OPS.contains(&arg.as_str())
             || STDOUT_APPEND_OPS.contains(&arg.as_str())
@@ -73,10 +73,15 @@ pub fn segment_args(shell: &Shell, args: &[String]) -> Vec<String> {
         }
 
         if arg.contains("$") {
+            let mut new_arg = String::new();
             let sign_ind = arg.find("$").unwrap();
             let variable = arg.get(sign_ind + 1..).unwrap_or_default();
             let value = shell.get_variable(variable).unwrap();
-            arg = value;
+            new_arg.push_str(arg.get(..sign_ind).unwrap());
+            new_arg.push_str(value);
+
+            new_args.push(new_arg);
+            continue;
         }
 
         new_args.push(arg.clone());
