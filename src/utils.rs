@@ -73,7 +73,8 @@ pub fn segment_args(shell: &Shell, args: &[String]) -> Vec<String> {
         }
 
         if arg.contains("$") {
-            let variable = arg.get(1..).unwrap_or_default();
+            let sign_ind = arg.find("$").unwrap();
+            let variable = arg.get(sign_ind + 1..).unwrap_or_default();
             let value = shell.get_variable(variable).unwrap();
             arg = value;
         }
