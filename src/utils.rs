@@ -116,7 +116,7 @@ fn replace_variables(shell: &Shell, arg: &String) -> String {
             None => String::new(),
         };
 
-        new_arg.push_str(value);
+        new_arg.push_str(&value);
     }
 
     new_arg
