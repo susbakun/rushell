@@ -75,12 +75,10 @@ pub fn segment_args(shell: &Shell, args: &[String]) -> Vec<String> {
         if arg.contains("$") {
             let new_arg = replace_variables(shell, arg);
 
-            new_args.push(new_arg);
+            if !new_arg.is_empty() {
+                new_args.push(new_arg);
+            }
             continue;
-        }
-
-        if !new_args.is_empty() {
-            new_args.push(arg.clone());
         }
     }
     new_args
