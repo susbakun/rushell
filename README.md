@@ -13,6 +13,22 @@ A minimal POSIX-style shell built in Rust, built as part of the [Codecrafters "B
   * `complete`
   * `jobs`
   * `history`
+  * `declare`
+  * `pwd`
+  * `cd`
+* **Variable expansion**
+
+  * `declare VAR=value` sets a shell variable (identifier must match `[A-Za-z_][A-Za-z0-9_]*`)
+  * `declare -p VAR` prints `declare -- VAR="value"`, or `declare: VAR: not found` if unset
+  * `$VAR` and `${VAR}` are expanded in arguments before builtins and external commands run
+  * Missing variables expand to an empty string
+  * Expansion works inside words (e.g. `strawberry_$VAR` → `strawberry_blueberry`)
+* **Directory navigation**
+
+  * `pwd` prints the current working directory
+  * `cd <path>` changes the working directory
+  * `cd ~` changes to the user’s home directory
+  * `cd` reports `cd: <path>: No such file or directory` for invalid paths
 * **Command history**
 
   * In-memory history for every non-empty line entered at the prompt
@@ -58,7 +74,7 @@ A minimal POSIX-style shell built in Rust, built as part of the [Codecrafters "B
 
   * **Command names** (first word)
 
-    * Builtins: `echo`, `exit`, `type`, `complete`, `jobs`, `history`
+    * Builtins: `echo`, `exit`, `type`, `complete`, `jobs`, `history`, `declare`, `pwd`, `cd`
     * Executables discovered on `PATH` at startup
     * First **Tab**: beep if multiple matches; extend to the longest common prefix when possible
     * Second **Tab**: list all matching commands (bash-style)
@@ -89,6 +105,45 @@ echo is a shell builtin
 
 $ type history
 history is a shell builtin
+
+$ type declare
+declare is a shell builtin
+```
+
+### Variable expansion
+
+```sh
+$ declare Grape_9=mango
+$ declare Pineapple_8=blueberry
+
+$ echo $Grape_9 strawberry_$Pineapple_8
+mango strawberry_blueberry
+
+$ declare -p Grape_9
+declare -- Grape_9="mango"
+
+$ declare -p missing_variable
+declare: missing_variable: not found
+
+# Expansion applies to external commands too
+$ custom_exe $Grape_9 strawberry_$Pineapple_8
+Arg #1: mango
+Arg #2: strawberry_blueberry
+```
+
+### Directory navigation
+
+```sh
+$ pwd
+/Users/you/projects/codecrafters-shell-rust
+
+$ cd bee/rat
+$ pwd
+/Users/you/projects/codecrafters-shell-rust/bee/rat
+
+$ cd ~
+$ pwd
+/Users/you
 ```
 
 ### History
@@ -303,11 +358,14 @@ src/
 │       ├── type_command.rs
 │       ├── complete_command.rs
 │       ├── jobs_command.rs
-│       └── history_command.rs
+│       ├── history_command.rs
+│       ├── declare_command.rs
+│       ├── pwd_command.rs
+│       └── cd_command.rs
 ├── types.rs                        # rustyline Editor type alias
 ├── job.rs                          # job status tracking (Running / Done)
 ├── output.rs                       # stdout/stderr output and redirection
-├── utils.rs                        # parsing, PATH lookup, pipeline splitting
+├── utils.rs                        # parsing, expansion, PATH lookup, pipeline splitting
 ├── file.rs                         # redirect targets
 └── constants.rs                    # builtins, redirect operators
 ```
@@ -329,6 +387,8 @@ This project is intentionally minimal and focuses on learning how shells work in
 * shell builtin behavior
 * readline-style editing and tab completion (commands, paths, directories, and external completer scripts)
 * command history (listing, file persistence, `HISTFILE`)
+* shell variables and parameter expansion (`declare`, `$VAR`, `${VAR}`)
+* working-directory navigation (`pwd`, `cd`, `~`)
 
 Some advanced shell features (subshells, globbing, `&&`/`||` chains, etc.) may still be work in progress depending on the current challenge stage. ([docs.codecrafters.io][1])
 
