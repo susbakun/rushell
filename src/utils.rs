@@ -97,12 +97,11 @@ fn replace_variables(shell: &Shell, arg: &String) -> String {
         } else if ch == '}' {
             dolla_seen = false;
 
-            let value = match shell.get_variable(&variable) {
-                Some(value) => value.to_string(),
-                None => String::new(),
-            };
+            let value = shell.get_variable(&variable);
 
-            new_arg.push_str(&value);
+            if let Some(value) = value {
+                new_arg.push_str(&value);
+            }
         } else if dolla_seen {
             variable.push(ch);
         } else {
@@ -111,12 +110,11 @@ fn replace_variables(shell: &Shell, arg: &String) -> String {
     }
 
     if dolla_seen {
-        let value = match shell.get_variable(&variable) {
-            Some(value) => value.to_string(),
-            None => String::new(),
-        };
+        let value = shell.get_variable(&variable);
 
-        new_arg.push_str(&value);
+        if let Some(value) = value {
+            new_arg.push_str(&value);
+        }
     }
 
     new_arg
