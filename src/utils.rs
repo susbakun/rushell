@@ -73,31 +73,7 @@ pub fn segment_args(shell: &Shell, args: &[String]) -> Vec<String> {
         }
 
         if arg.contains("$") {
-            let mut new_arg = String::new();
-            let mut dolla_seen = false;
-            let mut variable = String::new();
-
-            for ch in arg.chars() {
-                if ch == '$' {
-                    dolla_seen = true;
-                } else if ch == '{' {
-                    continue;
-                } else if ch == '}' {
-                    dolla_seen = false;
-
-                    let value = shell.get_variable(&variable).unwrap();
-                    new_arg.push_str(value);
-                } else if dolla_seen {
-                    variable.push(ch);
-                } else {
-                    new_arg.push(ch);
-                }
-            }
-
-            if dolla_seen {
-                let value = shell.get_variable(&variable).unwrap();
-                new_arg.push_str(value);
-            }
+            let new_arg = replace_variables(shell, arg);
 
             new_args.push(new_arg);
             continue;
@@ -106,6 +82,44 @@ pub fn segment_args(shell: &Shell, args: &[String]) -> Vec<String> {
         new_args.push(arg.clone());
     }
     new_args
+}
+
+fn replace_variables(shell: &Shell, arg: &String) -> String {
+    let mut new_arg = String::new();
+    let mut dolla_seen = false;
+    let mut variable = String::new();
+
+    for ch in arg.chars() {
+        if ch == '$' {
+            dolla_seen = true;
+        } else if ch == '{' {
+            continue;
+        } else if ch == '}' {
+            dolla_seen = false;
+
+            let value = match shell.get_variable(&variable) {
+                Some(value) => value.to_string(),
+                None => String::new(),
+            };
+
+            new_arg.push_str(&value);
+        } else if dolla_seen {
+            variable.push(ch);
+        } else {
+            new_arg.push(ch);
+        }
+    }
+
+    if dolla_seen {
+        let value = match shell.get_variable(&variable) {
+            Some(value) => value.to_string(),
+            None => String::new(),
+        };
+
+        new_arg.push_str(value);
+    }
+
+    new_arg
 }
 
 pub fn split_pipeline(tokens: &Vec<String>) -> Result<Vec<PipelineParts>> {
