@@ -79,7 +79,9 @@ pub fn segment_args(shell: &Shell, args: &[String]) -> Vec<String> {
             continue;
         }
 
-        new_args.push(arg.clone());
+        if !new_args.is_empty() {
+            new_args.push(arg.clone());
+        }
     }
     new_args
 }
