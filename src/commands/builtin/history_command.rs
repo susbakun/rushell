@@ -3,7 +3,7 @@ use std::vec::IntoIter;
 use super::*;
 
 pub fn handle_history_command(shell: &mut Shell, args: &[String]) -> Result<usize> {
-    let mut segmented_args_iter = segment_args(args).into_iter();
+    let mut segmented_args_iter = segment_args(shell, args).into_iter();
 
     let first_arg = segmented_args_iter.next();
     let mut n = None;

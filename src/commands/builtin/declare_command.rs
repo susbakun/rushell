@@ -3,7 +3,7 @@ use regex::Regex;
 use super::*;
 
 pub fn handle_declare_command(shell: &mut Shell, args: &[String]) -> Result<usize> {
-    let segmented_args = segment_args(args);
+    let segmented_args = segment_args(shell, args);
     let mut output = String::new();
 
     if segmented_args[0] == "-p" {

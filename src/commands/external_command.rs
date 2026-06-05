@@ -9,7 +9,7 @@ pub fn handle_executable_command(
     let (_, found) = find_exe(paths, command)?;
 
     let is_background_job = args.contains(&"&".to_string());
-    let exec_args = segment_args(args);
+    let exec_args = segment_args(shell, args);
 
     if !found {
         let output = format!("{command}: not found");

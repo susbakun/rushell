@@ -64,7 +64,7 @@ impl Shell {
                     let command = &tokens[0];
                     let args = tokens.get(1..).unwrap_or_default();
 
-                    let remainder = segment_args(args).join(" ");
+                    let remainder = segment_args(&self, args).join(" ");
 
                     process_command(self, command, &remainder, args, &tokens)?;
 
