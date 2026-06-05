@@ -14,3 +14,5 @@ mod history_command;
 pub use history_command::*;
 mod declare_command;
 pub use declare_command::*;
+mod pwd_command;
+pub use pwd_command::*;

@@ -34,6 +34,8 @@ pub fn process_command(
         handle_history_command(shell, args)?;
     } else if command == "declare" {
         handle_declare_command(shell, args)?;
+    } else if command == "pwd" {
+        handle_pwd_command(args)?;
     } else {
         handle_executable_command(shell, args, command)?;
     }
