@@ -74,11 +74,11 @@ pub fn segment_args(shell: &Shell, args: &[String]) -> Vec<String> {
 
         if arg.contains("$") {
             let mut new_arg = String::new();
-            let mut dolla_seen = true;
+            let mut dolla_seen = false;
             let mut open_brace = false;
             let mut variable = String::new();
 
-            for ch in arg.chars().skip(1) {
+            for ch in arg.chars() {
                 if ch == '$' {
                     dolla_seen = true;
                 } else if ch == '{' {
