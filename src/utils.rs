@@ -74,11 +74,27 @@ pub fn segment_args(shell: &Shell, args: &[String]) -> Vec<String> {
 
         if arg.contains("$") {
             let mut new_arg = String::new();
-            let sign_ind = arg.find("$").unwrap();
-            let variable = arg.get(sign_ind + 1..).unwrap_or_default();
-            let value = shell.get_variable(variable).unwrap();
-            new_arg.push_str(arg.get(..sign_ind).unwrap());
-            new_arg.push_str(value);
+            let mut dolla_seen = true;
+            let mut open_brace = false;
+            let mut variable = String::new();
+
+            for ch in arg.chars().skip(1) {
+                if ch == '$' {
+                    dolla_seen = true;
+                } else if ch == '{' {
+                    open_brace = true;
+                } else if ch == '}' {
+                    open_brace = false;
+                    dolla_seen = false;
+
+                    let value = shell.get_variable(&variable).unwrap();
+                    new_arg.push_str(value);
+                } else if dolla_seen && open_brace {
+                    variable.push(ch);
+                } else {
+                    new_arg.push(ch);
+                }
+            }
 
             new_args.push(new_arg);
             continue;
